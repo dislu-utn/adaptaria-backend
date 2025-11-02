@@ -213,6 +213,7 @@ export type UserLoginDTO = z.infer<typeof UserLoginSchema.shape.body>;
 export const UpdateUserProfileSchema = z.object({
   body: z.object({
     profilePicture: z.string().url().optional(),
+    userId: z.string().optional(),
   }),
 });
 
