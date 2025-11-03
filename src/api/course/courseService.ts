@@ -132,7 +132,7 @@ export const courseService = {
     return courseRepository.findCoursesByTeacherId(teacherUserId);
   },
 
-  async addSectionToCourse(courseId: string, sectionData: SectionCreationDTO): Promise<CourseDTO> {
+  async addSectionToCourse(courseId: string, sectionData: SectionCreationDTO): Promise<SectionDTO> {
     return await courseRepository.addSectionToCourse(courseId, sectionData);
   },
 

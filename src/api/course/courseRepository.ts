@@ -10,7 +10,7 @@ import {
   CourseModel,
   CourseUpdateDTO,
 } from '@/api/course/courseModel';
-import { SectionCreationDTO, SectionModel, SectionUpdateDTO } from '@/api/course/section/sectionModel';
+import { SectionCreationDTO, SectionDTO, SectionModel, SectionUpdateDTO } from '@/api/course/section/sectionModel';
 import { StudentModel } from '@/api/student/studentModel';
 import { TeacherModel } from '@/api/teacher/teacherModel';
 import { UserModel } from '@/api/user/userModel';
@@ -44,7 +44,7 @@ export const courseRepository = {
     return courses.map((course) => course.toDto());
   },
 
-  addSectionToCourse: async (courseId: string, sectionData: SectionCreationDTO): Promise<any> => {
+  addSectionToCourse: async (courseId: string, sectionData: SectionCreationDTO): Promise<SectionDTO> => {
     const newSection = new SectionModel({
       name: sectionData.name,
       description: sectionData.description,

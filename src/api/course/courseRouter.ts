@@ -21,6 +21,7 @@ import { courseService } from '@/api/course/courseService';
 import {
   DeleteSectionSchema,
   SectionCreationSchema,
+  SectionDTO,
   SectionDTOSchema,
   SectionFetchingSchema,
   SectionUpdateSchema,
@@ -170,13 +171,14 @@ export const courseRouter: Router = (() => {
         const courseReq = GetCourseSchema.parse({ params: req.params });
         logger.trace(`[CourseRouter] - [/:courseId/section] - Retrieving course with id: ${courseReq.params.id}...`);
 
-        const updatedCourse = await courseService.addSectionToCourse(courseId, sectionData);
+        const updatedSection: SectionDTO = await courseService.addSectionToCourse(courseId, sectionData);
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Section added to course successfully',
-          updatedCourse,
+          updatedSection,
           StatusCodes.OK
         );
+        connector_sync('subject', courseId + '/' + updatedSection.id, 'create');
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[CourseRouter] - [/:courseId/section] - Error: ${e}`);
@@ -223,6 +225,8 @@ export const courseRouter: Router = (() => {
           updatedSection,
           StatusCodes.OK
         );
+
+        connector_sync('subject', courseId + '/' + updatedSection.id, 'update');
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[CourseRouter] - [/:courseId/sections/:sectionId] - Error: ${e}`);
