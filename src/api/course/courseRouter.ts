@@ -38,6 +38,8 @@ import { Role } from '@/common/models/role';
 import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers';
 import { logger } from '@/common/utils/serverLogger';
 
+import { connector_sync } from '../connector/connector_sync';
+
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -89,6 +91,8 @@ export const courseRouter: Router = (() => {
           createdCourse,
           StatusCodes.CREATED
         );
+        connector_sync('course', createdCourse.id, 'create');
+
         handleApiResponse(apiResponse, res);
       } catch (error) {
         logger.error(`[CourseRouter] - [/create] - Error: ${error}`);
@@ -671,6 +675,7 @@ export const courseRouter: Router = (() => {
           updatedCourse,
           StatusCodes.OK
         );
+        connector_sync('course', updatedCourse.id, 'update');
         handleApiResponse(apiResponse, res);
       } catch (error) {
         logger.error(`[CourseRouter] - [/update] - Error: ${error}`);
