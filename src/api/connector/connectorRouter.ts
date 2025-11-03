@@ -7,6 +7,7 @@ import {
   CourseDTO,
   CourseUpdateDTO,
   CourseUpdateSchema,
+  GetCourseSchema,
 } from '@/api/course/courseModel';
 import {
   GetUserSchema,
@@ -26,6 +27,7 @@ import { logger } from '@/common/utils/serverLogger';
 
 import { InvalidCredentialsError } from '../auth/authModel';
 import { courseService } from '../course/courseService';
+import { SectionCreationSchema, SectionDTO, SectionUpdateSchema } from '../course/section/sectionModel';
 import { directorService } from '../director/directorService';
 import { studentService } from '../student/studentService';
 import { userService } from '../user/userService';
@@ -274,6 +276,67 @@ export const connectorRouter: Router = (() => {
         return next(apiError);
       } finally {
         logger.trace('[CourseRouter] - [/:courseId/students] - End');
+      }
+    }
+  );
+
+  router.post(
+    '/:courseId/section',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.DIRECTOR]),
+    validateRequest(SectionCreationSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      const { courseId } = req.params;
+      const sectionData = req.body;
+
+      try {
+        const updatedSection: SectionDTO = await courseService.addSectionToCourse(courseId, sectionData);
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Section added to course successfully',
+          updatedSection,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        logger.error(`[CourseRouter] - [/:courseId/section] - Error: ${e}`);
+        const apiError = new ApiError('Failed to add section to course', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [/:courseId/section] - End');
+      }
+    }
+  );
+
+  router.patch(
+    '/:courseId/sections/:sectionId',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.DIRECTOR]),
+    validateRequest(SectionUpdateSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      const { courseId, sectionId } = req.params;
+      const updateData = req.body;
+
+      try {
+        // Llamar al servicio para actualizar la sección
+        const updatedSection = await courseService.updateSection(courseId, sectionId, updateData);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Section updated successfully',
+          updatedSection,
+          StatusCodes.OK
+        );
+
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        logger.error(`[CourseRouter] - [/:courseId/sections/:sectionId] - Error: ${e}`);
+        const apiError = new ApiError('Failed to update section', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [/:courseId/sections/:sectionId] - End');
       }
     }
   );
