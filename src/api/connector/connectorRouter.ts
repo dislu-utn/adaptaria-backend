@@ -1,7 +1,13 @@
 import express, { NextFunction, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
-import { AddStudentsSchema, CourseCreationSchema, CourseDTO } from '@/api/course/courseModel';
+import {
+  AddStudentsSchema,
+  CourseCreationSchema,
+  CourseDTO,
+  CourseUpdateDTO,
+  CourseUpdateSchema,
+} from '@/api/course/courseModel';
 import {
   GetUserSchema,
   UpdateUserProfileSchema,
@@ -202,6 +208,41 @@ export const connectorRouter: Router = (() => {
         return next(apiError);
       } finally {
         logger.trace('[CourseRouter] - [/create] - End');
+      }
+    }
+  );
+
+  router.patch(
+    '/:courseId',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.DIRECTOR]),
+    validateRequest(CourseUpdateSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const courseId = req.params.courseId;
+
+        // Obtener datos para actualizar
+        const courseUpdateData: CourseUpdateDTO = {
+          ...req.body,
+        };
+
+        const updatedCourse: CourseDTO = await courseService.update(courseId, courseUpdateData);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Course updated successfully',
+          updatedCourse,
+          StatusCodes.OK
+        );
+
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[CourseRouter] - [/update] - Error: ${error}`);
+        const apiError = new ApiError('Failed to update course', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [/update] - End');
       }
     }
   );
