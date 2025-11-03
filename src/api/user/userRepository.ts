@@ -14,6 +14,14 @@ export const userRepository = {
     return user;
   },
 
+  getHashedPassword: async (id: string): Promise<string> => {
+    const user = await UserModel.findById(id).select('password');
+    if (!user) {
+      throw new UserNotFoundError('User not found');
+    }
+    return (user as any).password;
+  },
+
   create: async (user: UserCreation): Promise<User> => {
     const newUser = await UserModel.create<UserCreationDTO>(user);
     return userRepository.findByIdAsync(newUser.id);

@@ -19,6 +19,7 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
 import { InvalidCredentialsError } from '../auth/authModel';
+import { connector_sync } from '../connector/connector_sync';
 
 export const userRegistry = new OpenAPIRegistry();
 userRegistry.register('User', UserDTOSchema);
@@ -146,6 +147,8 @@ export const userRouter: Router = (() => {
           updatedUser,
           StatusCodes.OK
         );
+
+        connector_sync('user', updatedUser.id, 'update');
         handleApiResponse(apiResponse, res);
       } catch (error) {
         const apiError = new ApiError('Failed to update user profile', StatusCodes.INTERNAL_SERVER_ERROR, error);
@@ -189,6 +192,8 @@ export const userRouter: Router = (() => {
           updatedUserDTO,
           StatusCodes.OK
         );
+        connector_sync('user', updatedUserDTO.id, 'update');
+
         handleApiResponse(apiResponse, res);
       } catch (error) {
         const apiError = new ApiError('Failed to update user profile', StatusCodes.INTERNAL_SERVER_ERROR, error);

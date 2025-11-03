@@ -13,6 +13,7 @@ import { Role } from '@/common/models/role';
 import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers';
 import { logger } from '@/common/utils/serverLogger';
 
+import { connector_sync } from '../connector/connector_sync';
 import { DirectorModel } from './directorModel';
 import { directorService } from './directorService';
 const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
@@ -42,6 +43,9 @@ export const directorRouter: Router = (() => {
           userDTO,
           StatusCodes.CREATED
         );
+
+        connector_sync('director', userDTO.id, 'create');
+
         handleApiResponse(apiResponse, res);
       } catch (error) {
         logger.error(`[DirectorRouter] - [/:instituteId] - Error: ${error}`);

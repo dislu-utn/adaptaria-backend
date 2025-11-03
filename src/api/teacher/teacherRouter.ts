@@ -14,6 +14,7 @@ import { Role } from '@/common/models/role';
 import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers';
 import { logger } from '@/common/utils/serverLogger';
 
+import { connector_sync } from '../connector/connector_sync';
 import { directorService } from '../director/directorService';
 import { UserCreationMassiveSchema, UserCreationSchema, UserDTOSchema } from '../user/userModel';
 import { teacherService } from './teacherService';
@@ -60,6 +61,9 @@ export const teacherRouter: Router = (() => {
           createdTeacher,
           StatusCodes.CREATED
         );
+
+        connector_sync('teacher', createdTeacher.id, 'create');
+
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[TeacherRouter] - [/] - Error: ${e}`);

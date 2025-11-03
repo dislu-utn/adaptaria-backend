@@ -18,6 +18,10 @@ export const userService = {
     return users.map((user: User) => user.toDto());
   },
 
+  getHashedPassword: async (id: string): Promise<string> => {
+    const password: string = await userRepository.getHashedPassword(id);
+    return password;
+  },
   // Retrieves a single user by their ID
   findById: async (id: string): Promise<any> => {
     const user: User = await userRepository.findByIdAsync(id);

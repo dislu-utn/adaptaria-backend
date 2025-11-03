@@ -15,15 +15,24 @@ export const directorService = {
   create: async (user: UserDirectorCreationDTO): Promise<UserDTO> => {
     logger.trace('[DirectorService] - [create] - Start');
     logger.trace(`[DirectorService] - [create] - Creating user: ${JSON.stringify(user)}`);
-    logger.trace(`[DirectorService] - [create] - Generating random password...`);
-    const randomPassword = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
-    if (config.app.node_env === 'development') {
-      logger.trace(`[DirectorService] - [create] - Random password: ${randomPassword}`);
+
+    let hash: string;
+    if (user.password) {
+      const { password, ...restUser } = user;
+      hash = password;
+      user = restUser;
+    } else {
+      logger.trace(`[DirectorService] - [create] - Generating random password...`);
+      const randomPassword = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+      if (config.app.node_env === 'development') {
+        logger.trace(`[DirectorService] - [create] - Random password: ${randomPassword}`);
+      }
+      logger.trace(`[DirectorService] - [create] - Hashing password...`);
+      hash = await bcrypt.hash(randomPassword, 10);
+      logger.trace(`[DirectorService] - [create] - Password hashed.`);
     }
-    logger.trace(`[DirectorService] - [create] - Hashing password...`);
-    const hash = await bcrypt.hash(randomPassword, 10);
-    logger.trace(`[DirectorService] - [create] - Password hashed.`);
     logger.trace(`[DirectorService] - [create] - Creating user...`);
+
     const createdUser: UserDTO = await userService.create({ ...user, password: hash, role: Role.DIRECTOR });
     logger.trace(`[DirectorService] - [create] - User created: ${JSON.stringify(createdUser)}`);
 

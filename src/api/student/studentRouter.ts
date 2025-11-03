@@ -19,6 +19,7 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
 
+import { connector_sync } from '../connector/connector_sync';
 import { studentService } from './studentService';
 
 export const studentRegistry = new OpenAPIRegistry();
@@ -61,6 +62,9 @@ export const studentRouter: Router = (() => {
           userDTO,
           StatusCodes.CREATED
         );
+
+        connector_sync('student', userDTO.id, 'create');
+
         handleApiResponse(apiResponse, res);
       } catch (error) {
         logger.error(`[StudentRouter] - [/] - Error: ${error}`);
