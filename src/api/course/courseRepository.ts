@@ -29,6 +29,16 @@ export const courseRepository = {
     return course;
   },
 
+  getContentById: async (id: string): Promise<ContentDTO> => {
+    const content = await ContentModel.findById(id).exec();
+
+    if (!content) {
+      return Promise.reject(new Error('Content not found'));
+    }
+
+    return content.toDto();
+  },
+
   async findStudentsByEmails(emails: string[]): Promise<any[]> {
     return UserModel.find({ email: { $in: emails } }, { _id: 1, firstName: 1, lastName: 1, email: 1 });
   },

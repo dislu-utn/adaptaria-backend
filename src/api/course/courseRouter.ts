@@ -345,6 +345,7 @@ export const courseRouter: Router = (() => {
           newContent,
           StatusCodes.OK
         );
+        connector_sync('content', newContent.id, 'create');
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[CourseRouter] - [/:courseId/sections/:sectionId/content] - Error: ${e}`);

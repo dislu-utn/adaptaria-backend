@@ -174,6 +174,21 @@ export const courseService = {
     return contentsWithUrls;
   },
 
+  getContentById: async (id: string) => {
+    const content = await courseRepository.getContentById(id);
+
+    if (!content) {
+      throw new Error('Content not found');
+    }
+
+    const presignedUrl = await s3Get(content.key);
+
+    return {
+      ...content,
+      presignedUrl,
+    };
+  },
+
   deleteCourse: async (courseId: string): Promise<void> => {
     await courseRepository.deleteCourse(courseId);
   },

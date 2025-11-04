@@ -7,7 +7,6 @@ import {
   CourseDTO,
   CourseUpdateDTO,
   CourseUpdateSchema,
-  GetCourseSchema,
 } from '@/api/course/courseModel';
 import {
   GetUserSchema,
@@ -337,6 +336,35 @@ export const connectorRouter: Router = (() => {
         return next(apiError);
       } finally {
         logger.trace('[CourseRouter] - [/:courseId/sections/:sectionId] - End');
+      }
+    }
+  );
+
+  router.get(
+    '/contents/:id',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.DIRECTOR]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      if (!req.sessionContext || !req.sessionContext.user) {
+        return next(new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED, 'User is not authenticated'));
+      }
+
+      const { id } = req.params;
+
+      try {
+        const content = await courseService.getContentById(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Contents retrieved successfully',
+          content,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve content', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
       }
     }
   );
