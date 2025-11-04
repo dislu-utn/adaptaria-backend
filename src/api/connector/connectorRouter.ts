@@ -1,5 +1,6 @@
 import express, { NextFunction, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import multer from 'multer';
 
 import {
   AddStudentsSchema,
@@ -25,6 +26,7 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 
 import { InvalidCredentialsError } from '../auth/authModel';
+import { ContentCreationSchema } from '../course/content/contentModel';
 import { courseService } from '../course/courseService';
 import { SectionCreationSchema, SectionDTO, SectionUpdateSchema } from '../course/section/sectionModel';
 import { directorService } from '../director/directorService';
@@ -336,6 +338,42 @@ export const connectorRouter: Router = (() => {
         return next(apiError);
       } finally {
         logger.trace('[CourseRouter] - [/:courseId/sections/:sectionId] - End');
+      }
+    }
+  );
+
+  const storage = multer.memoryStorage();
+  const upload = multer({ storage });
+  router.post(
+    '/contents/:sectionId',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.DIRECTOR]),
+    upload.single('file'),
+    validateRequest(ContentCreationSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      const { sectionId } = req.params;
+      const contentData = req.body;
+      const file = req.file;
+      if (!file) {
+        return next(new ApiError('File is required', StatusCodes.BAD_REQUEST));
+      }
+
+      try {
+        const newContent = await courseService.addContentToSection(sectionId, contentData, file);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Content added to section successfully',
+          newContent,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to add content to section', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [/:courseId/sections/:sectionId/content] - End');
       }
     }
   );
