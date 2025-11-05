@@ -40,7 +40,7 @@ export const connectorRouter: Router = (() => {
   router.get(
     '/users/:id',
     validateRequest(GetUserSchema),
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
         const userReq = GetUserSchema.parse({ params: req.params });
@@ -67,7 +67,7 @@ export const connectorRouter: Router = (() => {
 
   router.get(
     '/users/get_hashed_password/:id',
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
         const userReq = GetUserSchema.parse({ params: req.params });
@@ -94,7 +94,7 @@ export const connectorRouter: Router = (() => {
   router.patch(
     '/users/me',
     sessionMiddleware,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     validateRequest(UpdateUserProfileSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
@@ -126,7 +126,7 @@ export const connectorRouter: Router = (() => {
   router.post(
     '/students',
     sessionMiddleware,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     validateRequest(UserCreationSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       const sessionContext = req.sessionContext;
@@ -158,7 +158,7 @@ export const connectorRouter: Router = (() => {
   router.post(
     '/directors',
     validateRequest(UserDirectorCreationSchema),
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     async (req: SessionRequest, res: Response) => {
       try {
         const userDTO: UserDTO = await directorService.create(req.body);
@@ -184,7 +184,7 @@ export const connectorRouter: Router = (() => {
   router.post(
     '/courses',
     sessionMiddleware,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     validateRequest(CourseCreationSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
@@ -219,7 +219,7 @@ export const connectorRouter: Router = (() => {
     '/:courseId',
     sessionMiddleware,
     checkSessionContext,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     validateRequest(CourseUpdateSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
@@ -254,7 +254,7 @@ export const connectorRouter: Router = (() => {
     '/courses/:courseId/students',
     sessionMiddleware,
     checkSessionContext,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     validateRequest(AddStudentsSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       const { courseId } = req.params;
@@ -285,7 +285,7 @@ export const connectorRouter: Router = (() => {
     '/:courseId/section',
     sessionMiddleware,
     checkSessionContext,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     validateRequest(SectionCreationSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       const { courseId } = req.params;
@@ -314,7 +314,7 @@ export const connectorRouter: Router = (() => {
     '/:courseId/sections/:sectionId',
     sessionMiddleware,
     checkSessionContext,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     validateRequest(SectionUpdateSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       const { courseId, sectionId } = req.params;
@@ -348,7 +348,7 @@ export const connectorRouter: Router = (() => {
     '/contents/:sectionId',
     sessionMiddleware,
     checkSessionContext,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     upload.single('file'),
     validateRequest(ContentCreationSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
@@ -382,7 +382,7 @@ export const connectorRouter: Router = (() => {
     '/contents/:id',
     sessionMiddleware,
     checkSessionContext,
-    roleMiddleware([Role.DIRECTOR]),
+    roleMiddleware([Role.ADMIN]),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       if (!req.sessionContext || !req.sessionContext.user) {
         return next(new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED, 'User is not authenticated'));
