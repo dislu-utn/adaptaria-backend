@@ -26,4 +26,11 @@ export const instituteService = {
     logger.trace('[InstituteService] - [findAll] - End');
     return instituteDTOs;
   },
+
+  findById: async (id: string): Promise<InstituteDTO> => {
+    logger.trace(`[InstituteService] - [findById] - Finding institute with id: ${id}`);
+    const institute = await instituteRepository.findById(id);
+    logger.trace('[InstituteService] - [findById] - End');
+    return institute;
+  },
 };

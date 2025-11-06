@@ -5,6 +5,7 @@ import { app } from '@/server';
 
 import { buildTransporter, initTransporter } from './common/mailSender/mailSenderService';
 import { config } from './common/utils/config';
+import { initAdminUser } from './common/utils/initAdminUser';
 import { connectToMongoDB } from './common/utils/mongodb';
 
 const server = app.listen(config.app.port, () => {
@@ -13,8 +14,12 @@ const server = app.listen(config.app.port, () => {
 });
 
 connectToMongoDB(config.mongodb.uri)
-  .then(() => logger.info('MongoDB connected'))
-  .catch((ex) => logger.error(`Error connecting to MongoDB: ${(ex as Error).message}`));
+  .then(() => {
+    logger.info('MongoDB connected');
+    return initAdminUser();
+  })
+  .then(() => logger.info('Admin user initialization complete'))
+  .catch((ex) => logger.error(`Error during initialization: ${(ex as Error).message}`));
 
 initTransporter(buildTransporter());
 

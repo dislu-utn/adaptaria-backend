@@ -30,7 +30,9 @@ import { ContentCreationSchema } from '../course/content/contentModel';
 import { courseService } from '../course/courseService';
 import { SectionCreationSchema, SectionDTO, SectionUpdateSchema } from '../course/section/sectionModel';
 import { directorService } from '../director/directorService';
+import { instituteService } from '../institute/instituteService';
 import { studentService } from '../student/studentService';
+import { teacherService } from '../teacher/teacherService';
 import { userService } from '../user/userService';
 const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
 
@@ -402,6 +404,234 @@ export const connectorRouter: Router = (() => {
         handleApiResponse(apiResponse, res);
       } catch (e) {
         const apiError = new ApiError('Failed to retrieve content', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  // ==========================================
+  // Institute Endpoints
+  // ==========================================
+
+  /**
+   * Obtener instituto por ID
+   * GET /connector/institutes/:id
+   */
+  router.get(
+    '/institutes/:id',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/institutes/:id] - Getting institute ${id}`);
+
+        const institute = await instituteService.findById(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Institute retrieved successfully',
+          institute,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve institute', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  /**
+   * Obtener cursos de un instituto
+   * GET /connector/institutes/:id/courses
+   */
+  router.get(
+    '/institutes/:id/courses',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/institutes/:id/courses] - Getting courses for institute ${id}`);
+
+        const courses = await courseService.findCoursesByInstituteId(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Courses retrieved successfully',
+          courses,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve courses', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  /**
+   * Obtener directores de un instituto
+   * GET /connector/institutes/:id/directors
+   */
+  router.get(
+    '/institutes/:id/directors',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/institutes/:id/directors] - Getting directors for institute ${id}`);
+
+        const directors = await directorService.findByInstituteId(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Directors retrieved successfully',
+          directors,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve directors', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  /**
+   * Obtener estudiantes de un instituto
+   * GET /connector/institutes/:id/students
+   */
+  router.get(
+    '/institutes/:id/students',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/institutes/:id/students] - Getting students for institute ${id}`);
+
+        const students = await studentService.getStudentsByInstituteId(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Students retrieved successfully',
+          students,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve students', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  /**
+   * Obtener profesores de un instituto
+   * GET /connector/institutes/:id/teachers
+   */
+  router.get(
+    '/institutes/:id/teachers',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/institutes/:id/teachers] - Getting teachers for institute ${id}`);
+
+        const teachers = await teacherService.findByInstituteId(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Teachers retrieved successfully',
+          teachers,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve teachers', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  /**
+   * Obtener secciones de un curso
+   * GET /connector/courses/:id/sections
+   */
+  router.get(
+    '/courses/:id/sections',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/courses/:id/sections] - Getting sections for course ${id}`);
+
+        const sections = await courseService.getSectionsOfCourse(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Sections retrieved successfully',
+          sections,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve sections', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  /**
+   * Obtener estudiantes de un curso
+   * GET /connector/courses/:id/students
+   */
+  router.get(
+    '/courses/:id/students',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/courses/:id/students] - Getting students for course ${id}`);
+
+        const students = await courseService.getStudentsOfCourse(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Students retrieved successfully',
+          students,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve students', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      }
+    }
+  );
+
+  /**
+   * Obtener contents de una sección
+   * GET /connector/sections/:id/contents
+   */
+  router.get(
+    '/sections/:id/contents',
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id } = req.params;
+        logger.trace(`[ConnectorRouter] - [/sections/:id/contents] - Getting contents for section ${id}`);
+
+        const contents = await courseService.getContentsWithPresignedUrls(id);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Contents retrieved successfully',
+          contents,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        const apiError = new ApiError('Failed to retrieve contents', StatusCodes.INTERNAL_SERVER_ERROR, e);
         return next(apiError);
       }
     }

@@ -101,6 +101,20 @@ export const studentService = {
     return userService.getAllStudents(userId);
   },
 
+  getStudentsByInstituteId: async (instituteId: string): Promise<any[]> => {
+    logger.trace(`[StudentService] - [getStudentsByInstituteId] - Finding students for institute: ${instituteId}`);
+    const students = await studentRepository.findByInstituteId(instituteId);
+    logger.trace(`[StudentService] - [getStudentsByInstituteId] - Found ${students.length} students`);
+
+    return students.map((student: any) => ({
+      id: student.user.id,
+      email: student.user.email,
+      firstName: student.user.firstName,
+      lastName: student.user.lastName,
+      learningProfile: student.learningProfile,
+    }));
+  },
+
   getStudentsByFilters: async (filters: StudentFilter, teacherLogged: string): Promise<StudentResponse[] | null> => {
     const students = await studentRepository.findStudentsByFilters(filters, teacherLogged);
 

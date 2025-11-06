@@ -68,6 +68,13 @@ export const directorService = {
     return directors;
   },
 
+  findByInstituteId: async (instituteId: string): Promise<DirectorDTO[]> => {
+    logger.trace(`[DirectorService] - [findByInstituteId] - Finding directors for institute: ${instituteId}`);
+    const directors = await directorRepository.findByInstituteId(instituteId);
+    logger.trace(`[DirectorService] - [findByInstituteId] - Found ${directors.length} directors`);
+    return directors;
+  },
+
   getInstituteId: async (directorId: string): Promise<string> => {
     logger.trace('[DirectorService] - [getInstituteId] - Start');
     const id = await directorRepository.getInstituteId(directorId);

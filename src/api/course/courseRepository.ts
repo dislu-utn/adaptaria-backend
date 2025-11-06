@@ -54,6 +54,16 @@ export const courseRepository = {
     return courses.map((course) => course.toDto());
   },
 
+  async findByInstituteId(instituteId: string): Promise<CourseDTO[]> {
+    // Obtener todos los profesores del instituto
+    const teachers = await TeacherModel.find({ institute: instituteId }).exec();
+    const teacherIds = teachers.map((teacher) => teacher.user);
+
+    // Obtener todos los cursos de esos profesores
+    const courses = await CourseModel.find({ teacherUserId: { $in: teacherIds } }).exec();
+    return courses.map((course) => course.toDto());
+  },
+
   addSectionToCourse: async (courseId: string, sectionData: SectionCreationDTO): Promise<SectionDTO> => {
     const newSection = new SectionModel({
       name: sectionData.name,
