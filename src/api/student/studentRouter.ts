@@ -56,6 +56,10 @@ export const studentRouter: Router = (() => {
         const directorUserId = sessionContext.user.id;
         const userDTO: UserDTO = await studentService.create(req.body, directorUserId);
         logger.trace(`[StudentRouter] - [/] - Student created: ${JSON.stringify(userDTO)}. Sending response`);
+
+        // Obtener el instituteId del director para sincronizar
+        const instituteId = await directorService.getInstituteId(directorUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Student created successfully',
@@ -63,7 +67,7 @@ export const studentRouter: Router = (() => {
           StatusCodes.CREATED
         );
 
-        connector_sync('student', userDTO.id, 'create');
+        connector_sync(instituteId, 'student', userDTO.id, 'create');
 
         handleApiResponse(apiResponse, res);
       } catch (error) {

@@ -13,6 +13,7 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/utils/requestLogger';
 
 import { authRouter } from './api/auth/authRouter';
+import { connectorRouter } from './api/connector/connectorRouter';
 import { contentRouter } from './api/course/content/contentRouter';
 import { courseRouter } from './api/course/courseRouter';
 import { directorRouter } from './api/director/directorRouter';
@@ -42,6 +43,16 @@ app.use(cookieParser());
 // Middlewares
 app.use(cors({ origin: config.cors_origin, credentials: true }));
 app.use(helmet());
+app.use((req, res, next) => {
+  const logData = {
+    url: req.originalUrl,
+    payload: req.body,
+    headers: req.headers,
+  };
+  console.log('[RequestLog]', JSON.stringify(logData));
+  next();
+});
+
 app.use(rateLimiter);
 
 // Request logging
@@ -62,6 +73,7 @@ app.use('/test', testRouter);
 app.use('/survey', surveyRouter);
 app.use('/institutes', sessionMiddleware, instituteRouter);
 app.use('/images', sessionMiddleware, imagesRouter);
+app.use('/connector', sessionMiddleware, connectorRouter);
 
 // Swagger UI
 app.use(openAPIRouter);

@@ -1,0 +1,1441 @@
+{
+  "info": {
+    "_postman_id": "adaptaria-backend-collection",
+    "name": "Adaptaria Backend API",
+    "description": "Colección completa de endpoints del backend de Adaptaria",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "ADAPTARIA_URL",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Get Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/health-check",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["health-check"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/auth",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["auth"]
+            }
+          }
+        },
+        {
+          "name": "Check Auth Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/auth",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["auth"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/auth",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["auth"]
+            }
+          }
+        },
+        {
+          "name": "Set Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"newPassword123\",\n  \"confirmPassword\": \"newPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/auth/setPassword?token=YOUR_TOKEN",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["auth", "setPassword"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "YOUR_TOKEN"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Password Recovery",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/auth/passwordRecovery",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["auth", "passwordRecovery"]
+            }
+          }
+        },
+        {
+          "name": "Google OAuth",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/auth/google",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["auth", "google"]
+            }
+          }
+        },
+        {
+          "name": "Google OAuth Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/auth/google/callback",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["auth", "google", "callback"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/users",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/users/me",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/users/:id",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "USER_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"profilePicture\": \"https://example.com/profile.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/users/me",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["users", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newRole\": \"TEACHER\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/users/:userId/role",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["users", ":userId", "role"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "USER_ID"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admins",
+      "item": [
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"email\": \"admin@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/admins",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["admins"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Directors",
+      "item": [
+        {
+          "name": "Create Director",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Director\",\n  \"lastName\": \"User\",\n  \"email\": \"director@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/directors",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["directors"]
+            }
+          }
+        },
+        {
+          "name": "Get All Directors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/directors",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["directors"]
+            }
+          }
+        },
+        {
+          "name": "Get Director Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/directors/courses",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["directors", "courses"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teachers",
+      "item": [
+        {
+          "name": "Create Teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Teacher\",\n  \"lastName\": \"User\",\n  \"email\": \"teacher@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/teachers",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["teachers"]
+            }
+          }
+        },
+        {
+          "name": "Create Teachers Massive",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"users\": [\n    {\n      \"firstName\": \"Teacher1\",\n      \"lastName\": \"User\",\n      \"email\": \"teacher1@example.com\"\n    },\n    {\n      \"firstName\": \"Teacher2\",\n      \"lastName\": \"User\",\n      \"email\": \"teacher2@example.com\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/teachers/massive",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["teachers", "massive"]
+            }
+          }
+        },
+        {
+          "name": "Get Teacher Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/teachers/me/courses",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["teachers", "me", "courses"]
+            }
+          }
+        },
+        {
+          "name": "Get All Teachers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/teachers",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["teachers"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Students",
+      "item": [
+        {
+          "name": "Create Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Student\",\n  \"lastName\": \"User\",\n  \"email\": \"student@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/students",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["students"]
+            }
+          }
+        },
+        {
+          "name": "Create Students Massive",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"users\": [\n    {\n      \"firstName\": \"Student1\",\n      \"lastName\": \"User\",\n      \"email\": \"student1@example.com\"\n    },\n    {\n      \"firstName\": \"Student2\",\n      \"lastName\": \"User\",\n      \"email\": \"student2@example.com\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/students/massive",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["students", "massive"]
+            }
+          }
+        },
+        {
+          "name": "Get All Students",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/students",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["students"]
+            }
+          }
+        },
+        {
+          "name": "Get Student Courses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/students/me/courses",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["students", "me", "courses"]
+            }
+          }
+        },
+        {
+          "name": "Get Student Learning Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/students/me/learning-profile",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["students", "me", "learning-profile"]
+            }
+          }
+        },
+        {
+          "name": "Get Students By Learning Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/students/learning-profile?courseId=&studentUserId=&learningProfile=&teacherUserId=",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["students", "learning-profile"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": ""
+                },
+                {
+                  "key": "studentUserId",
+                  "value": ""
+                },
+                {
+                  "key": "learningProfile",
+                  "value": ""
+                },
+                {
+                  "key": "teacherUserId",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Courses to Matriculate",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/students/me/courses-to-matriculate",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["students", "me", "courses-to-matriculate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "Create Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Course Name\",\n  \"description\": \"Course Description\",\n  \"subject\": \"Mathematics\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses"]
+            }
+          }
+        },
+        {
+          "name": "Get Course By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:id",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Course",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Course Name\",\n  \"description\": \"Updated Description\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Course",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Course Sections",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:id/sections",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":id", "sections"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Section to Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Section Name\",\n  \"description\": \"Section Description\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/section",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "section"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Section By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/sections/:sectionId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "sections", ":sectionId"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                },
+                {
+                  "key": "sectionId",
+                  "value": "SECTION_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Section",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Section Name\",\n  \"description\": \"Updated Description\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/sections/:sectionId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "sections", ":sectionId"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                },
+                {
+                  "key": "sectionId",
+                  "value": "SECTION_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Section",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/sections/:sectionId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "sections", ":sectionId"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                },
+                {
+                  "key": "sectionId",
+                  "value": "SECTION_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Content to Section",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "title",
+                  "value": "Content Title",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/sections/:sectionId/contents",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "sections", ":sectionId", "contents"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                },
+                {
+                  "key": "sectionId",
+                  "value": "SECTION_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Section Contents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/sections/:sectionId/contents",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "sections", ":sectionId", "contents"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                },
+                {
+                  "key": "sectionId",
+                  "value": "SECTION_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Students to Course",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentEmails\": [\n    \"student1@example.com\",\n    \"student2@example.com\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/students",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "students"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Course Students",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:id/students",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":id", "students"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Matriculate with Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentEmail\": \"student@example.com\",\n  \"matriculationCode\": \"ABC123\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/matriculation",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "matriculation"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove User from Course",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/courses/:courseId/users/:userId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["courses", ":courseId", "users", ":userId"],
+              "variable": [
+                {
+                  "key": "courseId",
+                  "value": "COURSE_ID"
+                },
+                {
+                  "key": "userId",
+                  "value": "USER_ID"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contents",
+      "item": [
+        {
+          "name": "Get Content By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Content",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Title\",\n  \"visibility\": true\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Content",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Content Visibility",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visible\": true\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/visibility",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "visibility"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Content Approval",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": true,\n  \"type\": \"SUMMARY\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/approval",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "approval"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Regenerate Content",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/regenerate",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "regenerate"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Reaction to Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isSatisfied\": true\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/reactions",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "reactions"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Content Reactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/reactions",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "reactions"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Content Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/summary",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "summary"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Content Summary",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newContent\": \"Updated summary content\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/summary",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "summary"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Content Mindmap",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/mindmap",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "mindmap"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Content Mindmap",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newContent\": \"Updated mindmap content\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/mindmap",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "mindmap"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Content Gamification",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/gamification",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "gamification"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Content Gamification",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newContent\": \"Updated gamification content\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/gamification",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "gamification"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Content Speech",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/speech",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "speech"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Content Speech",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newContent\": \"Updated speech content\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/contents/:contentId/speech",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["contents", ":contentId", "speech"],
+              "variable": [
+                {
+                  "key": "contentId",
+                  "value": "CONTENT_ID"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Learning Test",
+      "item": [
+        {
+          "name": "Submit Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    [4, 2, 3, 1],\n    [4, 2, 3, 1],\n    [4, 2, 3, 1],\n    [4, 2, 3, 1],\n    [4, 2, 3, 1],\n    [4, 2, 3, 1],\n    [4, 2, 3, 1],\n    [4, 2, 3, 1],\n    [3, 2, 4, 1],\n    [4, 2, 3, 1],\n    [1, 2, 3, 4],\n    [4, 2, 3, 1]\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/test",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["test"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Survey",
+      "item": [
+        {
+          "name": "Submit Survey",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [1, 2, 3, 4, 5],\n  \"free\": \"Optional feedback text\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/survey",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["survey"]
+            }
+          }
+        },
+        {
+          "name": "Get Student Survey Results",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/survey/student-results?courseId=&dateFrom=&dateTo=",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["survey", "student-results"],
+              "query": [
+                {
+                  "key": "courseId",
+                  "value": ""
+                },
+                {
+                  "key": "dateFrom",
+                  "value": ""
+                },
+                {
+                  "key": "dateTo",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Teacher Survey Results",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/survey/teacher-results?dateFrom=&dateTo=",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["survey", "teacher-results"],
+              "query": [
+                {
+                  "key": "dateFrom",
+                  "value": ""
+                },
+                {
+                  "key": "dateTo",
+                  "value": ""
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Institutes",
+      "item": [
+        {
+          "name": "Create Institute",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Institute Name\",\n  \"address\": \"Institute Address\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/institutes",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["institutes"]
+            }
+          }
+        },
+        {
+          "name": "Get All Institutes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/institutes",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["institutes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Images",
+      "item": [
+        {
+          "name": "Create Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"Image generation prompt\"\n}"
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/images",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["images"]
+            }
+          }
+        },
+        {
+          "name": "Upload Image and Get URL",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{ADAPTARIA_URL}}/images/url",
+              "host": ["{{ADAPTARIA_URL}}"],
+              "path": ["images", "url"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

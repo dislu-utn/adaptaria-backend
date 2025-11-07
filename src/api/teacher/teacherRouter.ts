@@ -55,6 +55,10 @@ export const teacherRouter: Router = (() => {
         const directorUserId = sessionContext.user.id;
         const createdTeacher = await teacherService.create(teacher, directorUserId);
         logger.trace(`[TeacherRouter] - [/] - Teacher created: ${JSON.stringify(createdTeacher)}`);
+
+        // Obtener el instituteId del director para sincronizar
+        const instituteId = await directorService.getInstituteId(directorUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Teacher successfully created',
@@ -62,7 +66,7 @@ export const teacherRouter: Router = (() => {
           StatusCodes.CREATED
         );
 
-        connector_sync('teacher', createdTeacher.id, 'create');
+        connector_sync(instituteId, 'teacher', createdTeacher.id, 'create');
 
         handleApiResponse(apiResponse, res);
       } catch (e) {

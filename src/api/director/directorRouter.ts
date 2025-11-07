@@ -44,7 +44,11 @@ export const directorRouter: Router = (() => {
           StatusCodes.CREATED
         );
 
-        connector_sync('director', userDTO.id, 'create');
+        // Obtener el instituteId del director que está creando
+        const adminDirectorId = sessionContext.user.id;
+        const instituteId = await directorService.getInstituteId(adminDirectorId);
+
+        connector_sync(instituteId, 'director', userDTO.id, 'create');
 
         handleApiResponse(apiResponse, res);
       } catch (error) {

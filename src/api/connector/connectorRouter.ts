@@ -30,6 +30,7 @@ import { ContentCreationSchema } from '../course/content/contentModel';
 import { courseService } from '../course/courseService';
 import { SectionCreationSchema, SectionDTO, SectionUpdateSchema } from '../course/section/sectionModel';
 import { directorService } from '../director/directorService';
+import { InstituteCreationSchema, InstituteDTO } from '../institute/instituteModel';
 import { instituteService } from '../institute/instituteService';
 import { studentService } from '../student/studentService';
 import { teacherService } from '../teacher/teacherService';
@@ -412,6 +413,39 @@ export const connectorRouter: Router = (() => {
   // ==========================================
   // Institute Endpoints
   // ==========================================
+
+  router.post(
+    '/institutes',
+    validateRequest(InstituteCreationSchema),
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response) => {
+      try {
+        logger.trace('[InstituteRouter] - [POST /institutes] - Start');
+        logger.trace(
+          `[InstituteRouter] - [POST /institutes] - Request to create institute: ${JSON.stringify(req.body)}`
+        );
+
+        const instituteDTO: InstituteDTO = await instituteService.create(req.body);
+
+        logger.trace(
+          `[InstituteRouter] - [POST /institutes] - Institute created: ${JSON.stringify(instituteDTO)}. Sending response`
+        );
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Institute created successfully',
+          instituteDTO,
+          StatusCodes.CREATED
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[InstituteRouter] - [POST /institutes] - Error: ${error}`);
+        const apiError = new ApiError('Failed to create institute', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return res.status(apiError.statusCode).json(apiError);
+      } finally {
+        logger.trace('[InstituteRouter] - [POST /institutes] - End');
+      }
+    }
+  );
 
   /**
    * Obtener instituto por ID

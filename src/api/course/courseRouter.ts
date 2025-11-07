@@ -40,6 +40,7 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 
 import { connector_sync } from '../connector/connector_sync';
+import { teacherService } from '../teacher/teacherService';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -86,13 +87,17 @@ export const courseRouter: Router = (() => {
 
         const createdCourse: CourseDTO = await courseService.create(courseData, teacherUserId);
         logger.trace(`[CourseRouter] - [/create] - Course created: ${JSON.stringify(createdCourse)}. Sending response`);
+
+        // Obtener el instituteId del teacher para sincronizar
+        const instituteId = await teacherService.getInstituteId(teacherUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Course created successfully',
           createdCourse,
           StatusCodes.CREATED
         );
-        connector_sync('course', createdCourse.id, 'create');
+        connector_sync(instituteId, 'course', createdCourse.id, 'create');
 
         handleApiResponse(apiResponse, res);
       } catch (error) {
@@ -172,13 +177,18 @@ export const courseRouter: Router = (() => {
         logger.trace(`[CourseRouter] - [/:courseId/section] - Retrieving course with id: ${courseReq.params.id}...`);
 
         const updatedSection: SectionDTO = await courseService.addSectionToCourse(courseId, sectionData);
+
+        // Obtener el instituteId a través del curso
+        const course = await courseService.findById(courseId);
+        const instituteId = await teacherService.getInstituteId(course.teacherUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Section added to course successfully',
           updatedSection,
           StatusCodes.OK
         );
-        connector_sync('subject', courseId + '/' + updatedSection.id, 'create');
+        connector_sync(instituteId, 'subject', courseId + '/' + updatedSection.id, 'create');
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[CourseRouter] - [/:courseId/section] - Error: ${e}`);
@@ -219,6 +229,10 @@ export const courseRouter: Router = (() => {
         // Llamar al servicio para actualizar la sección
         const updatedSection = await courseService.updateSection(courseId, sectionId, updateData);
 
+        // Obtener el instituteId a través del curso
+        const course = await courseService.findById(courseId);
+        const instituteId = await teacherService.getInstituteId(course.teacherUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Section updated successfully',
@@ -226,7 +240,7 @@ export const courseRouter: Router = (() => {
           StatusCodes.OK
         );
 
-        connector_sync('subject', courseId + '/' + updatedSection.id, 'update');
+        connector_sync(instituteId, 'subject', courseId + '/' + updatedSection.id, 'update');
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[CourseRouter] - [/:courseId/sections/:sectionId] - Error: ${e}`);
@@ -339,13 +353,18 @@ export const courseRouter: Router = (() => {
 
         const newContent = await courseService.addContentToSection(sectionId, contentData, file);
 
+        // Obtener el instituteId a través del curso
+        const { courseId } = req.params;
+        const course = await courseService.findById(courseId);
+        const instituteId = await teacherService.getInstituteId(course.teacherUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Content added to section successfully',
           newContent,
           StatusCodes.OK
         );
-        connector_sync('content', newContent.id, 'create');
+        connector_sync(instituteId, 'content', newContent.id, 'create');
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[CourseRouter] - [/:courseId/sections/:sectionId/content] - Error: ${e}`);
@@ -386,7 +405,7 @@ export const courseRouter: Router = (() => {
         if (role === Role.STUDENT) {
           // Estudiante: Filtrar los contenidos que estén visibles y aprobados
           contentsWithUrls = contentsWithUrls.filter((content) => {
-            const allApproved = content.generated?.every((gen) => gen.approved === true);
+            const allApproved = content.generated?.every((gen: { approved: boolean }) => gen.approved === true);
             return content.visible === true && allApproved;
           });
         }
@@ -674,13 +693,16 @@ export const courseRouter: Router = (() => {
         const updatedCourse: CourseDTO = await courseService.update(courseId, courseUpdateData);
         logger.trace(`[CourseRouter] - [/update] - Course updated: ${JSON.stringify(updatedCourse)}. Sending response`);
 
+        // Obtener el instituteId a través del teacher
+        const instituteId = await teacherService.getInstituteId(updatedCourse.teacherUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Course updated successfully',
           updatedCourse,
           StatusCodes.OK
         );
-        connector_sync('course', updatedCourse.id, 'update');
+        connector_sync(instituteId, 'course', updatedCourse.id, 'update');
         handleApiResponse(apiResponse, res);
       } catch (error) {
         logger.error(`[CourseRouter] - [/update] - Error: ${error}`);

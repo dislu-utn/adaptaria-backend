@@ -32,7 +32,7 @@ export async function initAdminUser(): Promise<void> {
       lastName: 'Administrator',
       email: adminEmail,
       password: hashedPassword,
-      role: Role.DIRECTOR,
+      role: Role.ADMIN,
       document: {
         type: 'GENERIC',
         number: '00000000',

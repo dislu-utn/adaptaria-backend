@@ -18,8 +18,13 @@ import { ApiResponse, ResponseStatus } from '@/common/models/apiResponse';
 import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers';
 import { logger } from '@/common/utils/serverLogger';
 const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
+import { Role } from '@/common/models/role';
+
 import { InvalidCredentialsError } from '../auth/authModel';
 import { connector_sync } from '../connector/connector_sync';
+import { directorService } from '../director/directorService';
+import { StudentModel } from '../student/studentModel';
+import { teacherService } from '../teacher/teacherService';
 
 export const userRegistry = new OpenAPIRegistry();
 userRegistry.register('User', UserDTOSchema);
@@ -131,6 +136,7 @@ export const userRouter: Router = (() => {
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
         const userId = req.sessionContext?.user?.id;
+        const userRole = req.sessionContext?.user?.role;
 
         if (!userId) {
           return next(UNAUTHORIZED);
@@ -141,6 +147,29 @@ export const userRouter: Router = (() => {
         // Actualizar solo los campos proporcionados
         const updatedUser = await userService.updateUserProfile(userId, profilePicture);
 
+        // Obtener el instituteId basándose en el rol del usuario
+        let instituteId: string | null = null;
+        try {
+          if (userRole === Role.DIRECTOR) {
+            instituteId = await directorService.getInstituteId(userId);
+          } else if (userRole === Role.TEACHER) {
+            instituteId = await teacherService.getInstituteId(userId);
+          } else if (userRole === Role.STUDENT) {
+            const student = await StudentModel.findOne({ user: userId }).exec();
+            if (student) {
+              instituteId = student.institute.toString();
+            }
+          }
+
+          // Solo sincronizar si tenemos instituteId
+          if (instituteId) {
+            connector_sync(instituteId, 'user', updatedUser.id, 'update');
+          }
+        } catch (syncError) {
+          logger.warn(`[UserRouter] - Failed to sync user profile update: ${syncError}`);
+          // No fallar la actualización si la sincronización falla
+        }
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'User profile updated successfully',
@@ -148,7 +177,6 @@ export const userRouter: Router = (() => {
           StatusCodes.OK
         );
 
-        connector_sync('user', updatedUser.id, 'update');
         handleApiResponse(apiResponse, res);
       } catch (error) {
         const apiError = new ApiError('Failed to update user profile', StatusCodes.INTERNAL_SERVER_ERROR, error);
@@ -186,13 +214,16 @@ export const userRouter: Router = (() => {
         // Actualizar solo los campos proporcionados
         const updatedUserDTO = await userService.updateUserRole(userId, newRole);
 
+        // Obtener el instituteId del director para sincronizar
+        const instituteId = await directorService.getInstituteId(directorId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'User role updated successfully',
           updatedUserDTO,
           StatusCodes.OK
         );
-        connector_sync('user', updatedUserDTO.id, 'update');
+        connector_sync(instituteId, 'user', updatedUserDTO.id, 'update');
 
         handleApiResponse(apiResponse, res);
       } catch (error) {

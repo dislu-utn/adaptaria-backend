@@ -11,6 +11,11 @@ import { config } from '../utils/config';
 
 export interface SessionRequest extends Request {
   sessionContext?: SessionContext;
+  body: Request['body'];
+  params: Request['params'];
+  cookies: Request['cookies'];
+  headers: Request['headers'];
+  file?: Request['file'];
 }
 
 export const sessionMiddleware = async (req: SessionRequest, res: Response, next: NextFunction) => {
