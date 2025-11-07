@@ -83,6 +83,9 @@ export const authRouter: Router = (() => {
         maxAge: 12 * 60 * 60 * 1000,
         sameSite: 'lax',
         secure: config.app.node_env === 'production',
+        ...(process.env.NODE_ENV === 'production' && {
+          domain: process.env.DOMAIN_NAME,
+        }),
       });
       logger.trace('[AuthRouter] - [/] - Sending response');
       const response = new ApiResponse(ResponseStatus.Success, 'User logged in', session, StatusCodes.OK);
