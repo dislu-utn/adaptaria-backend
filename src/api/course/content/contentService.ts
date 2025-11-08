@@ -142,4 +142,107 @@ export const contentService = {
 
     return content.toDto();
   },
+
+  async updateProcessedContent(
+    contentId: string,
+    generatedData: {
+      summary?: string;
+      mindMap?: any;
+      gamification?: any;
+      speech?: any;
+    }
+  ): Promise<ContentDTO> {
+    const content = await ContentModel.findById(contentId);
+
+    if (!content) {
+      throw new Error('Content not found');
+    }
+
+    // Actualizar cada tipo de contenido generado si existe
+    if (generatedData.summary !== undefined) {
+      const summaryContent = content.generated?.find((item) => item.type === 'SUMMARY');
+      if (summaryContent) {
+        summaryContent.content = generatedData.summary;
+      }
+    }
+
+    if (generatedData.mindMap !== undefined) {
+      const mindMapContent = content.generated?.find((item) => item.type === 'MIND_MAP');
+      if (mindMapContent) {
+        mindMapContent.content = generatedData.mindMap;
+      }
+    }
+
+    if (generatedData.gamification !== undefined) {
+      const gamificationContent = content.generated?.find((item) => item.type === 'GAMIFICATION');
+      if (gamificationContent) {
+        gamificationContent.content = generatedData.gamification;
+      }
+    }
+
+    if (generatedData.speech !== undefined) {
+      const speechContent = content.generated?.find((item) => item.type === 'SPEECH');
+      if (speechContent) {
+        speechContent.content = generatedData.speech;
+      }
+    }
+
+    // Verificar si todo el contenido ha sido generado
+    const allGenerated = content.generated?.every((item) => {
+      return item.content !== '' && item.content !== null && item.content !== undefined;
+    });
+
+    // Actualizar el estado a COMPLETED si todo está generado
+    if (allGenerated) {
+      content.status = 'COMPLETED';
+    }
+
+    await content.save();
+
+    return content.toDto();
+  },
+
+  /**
+   * Procesa automáticamente el contenido después de subirlo
+   * Esta función se ejecuta en background sin bloquear la respuesta
+   */
+  async autoProcessContent(contentId: string, connectorUrl: string, instituteId: string): Promise<void> {
+    try {
+      // Esperar un momento para asegurar que el archivo esté en S3
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Llamar al connector externo para que procese el contenido
+      const response = await fetch(connectorUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          institution_id: instituteId,
+          entity: 'content',
+          entity_id: contentId,
+          origin: 'adaptaria',
+          method: 'create',
+        }),
+      });
+
+      if (response.ok) {
+        // Aquí puedes agregar lógica adicional si el connector responde con los datos procesados
+        const data = await response.json();
+
+        // Si el connector devuelve los datos procesados directamente, actualizarlos
+        if (data && (data.summary || data.mindMap || data.gamification || data.speech)) {
+          await contentService.updateProcessedContent(contentId, {
+            summary: data.summary,
+            mindMap: data.mindMap,
+            gamification: data.gamification,
+            speech: data.speech,
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`[ContentService] - Failed to auto-process content ${contentId}:`, error);
+      // No lanzar el error para no afectar el flujo principal
+    }
+  },
 };

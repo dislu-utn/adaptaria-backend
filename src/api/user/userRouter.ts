@@ -199,7 +199,7 @@ export const userRouter: Router = (() => {
   router.patch(
     '/:userId/role',
     sessionMiddleware,
-    validateRequest(UpdateUserProfileSchema),
+    validateRequest(UpdateUserRoleSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
         const directorId = req.sessionContext?.user?.id;

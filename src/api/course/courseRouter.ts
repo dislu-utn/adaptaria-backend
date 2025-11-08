@@ -5,6 +5,7 @@ import multer from 'multer';
 import { z } from 'zod';
 
 import { ContentCreationSchema, ContentWithPresignedUrlSchema } from '@/api/course/content/contentModel';
+import { contentService } from '@/api/course/content/contentService';
 import {
   AddStudentsSchema,
   CourseCreationSchema,

@@ -8,10 +8,12 @@ import {
   CourseDTO,
   CourseUpdateDTO,
   CourseUpdateSchema,
+  GetCourseSchema,
 } from '@/api/course/courseModel';
 import {
   GetUserSchema,
   UpdateUserProfileSchema,
+  UpdateUserRoleSchema,
   UserCreationSchema,
   UserDirectorCreationSchema,
   UserDTO,
@@ -26,7 +28,8 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 
 import { InvalidCredentialsError } from '../auth/authModel';
-import { ContentCreationSchema } from '../course/content/contentModel';
+import { ContentCreationSchema, UpdateProcessedContentSchema } from '../course/content/contentModel';
+import { contentService } from '../course/content/contentService';
 import { courseService } from '../course/courseService';
 import { SectionCreationSchema, SectionDTO, SectionUpdateSchema } from '../course/section/sectionModel';
 import { directorService } from '../director/directorService';
@@ -39,34 +42,6 @@ const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
 
 export const connectorRouter: Router = (() => {
   const router = express.Router();
-
-  router.get(
-    '/users/:id',
-    validateRequest(GetUserSchema),
-    roleMiddleware([Role.ADMIN]),
-    async (req: SessionRequest, res: Response, next: NextFunction) => {
-      try {
-        const userReq = GetUserSchema.parse({ params: req.params });
-        const user: UserDTO & { password?: string } = await userService.findById(userReq.params.id.toString());
-        user.password = await userService.getHashedPassword(user.id!);
-        const apiResponse = new ApiResponse(
-          ResponseStatus.Success,
-          'User retrieved successfully',
-          user,
-          StatusCodes.OK
-        );
-        handleApiResponse(apiResponse, res);
-      } catch (e) {
-        if (e instanceof InvalidCredentialsError) {
-          const apiError = new ApiError('User not found', StatusCodes.NOT_FOUND, e);
-          return next(apiError);
-        }
-        return next(new ApiError('Failed to retrieve user', StatusCodes.INTERNAL_SERVER_ERROR, e));
-      } finally {
-        logger.trace('[UserRouter] - [/:id] - End');
-      }
-    }
-  );
 
   router.get(
     '/users/get_hashed_password/:id',
@@ -126,6 +101,63 @@ export const connectorRouter: Router = (() => {
     }
   );
 
+  router.patch(
+    '/users/:userId/role',
+    sessionMiddleware,
+    roleMiddleware([Role.ADMIN]),
+    validateRequest(UpdateUserRoleSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { userId } = req.params;
+        const { newRole } = req.body;
+
+        logger.trace(`[ConnectorRouter] - [/users/:userId/role] - Updating user ${userId} role to ${newRole}`);
+
+        const updatedUserDTO = await userService.updateUserRole(userId, newRole);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'User role updated successfully',
+          updatedUserDTO,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[ConnectorRouter] - [/users/:userId/role] - Error: ${error}`);
+        const apiError = new ApiError('Failed to update user role', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return next(apiError);
+      }
+    }
+  );
+
+  router.get(
+    '/users/:id',
+    validateRequest(GetUserSchema),
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const userReq = GetUserSchema.parse({ params: req.params });
+        const user: UserDTO & { password?: string } = await userService.findById(userReq.params.id.toString());
+        user.password = await userService.getHashedPassword(user.id!);
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'User retrieved successfully',
+          user,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        if (e instanceof InvalidCredentialsError) {
+          const apiError = new ApiError('User not found', StatusCodes.NOT_FOUND, e);
+          return next(apiError);
+        }
+        return next(new ApiError('Failed to retrieve user', StatusCodes.INTERNAL_SERVER_ERROR, e));
+      } finally {
+        logger.trace('[UserRouter] - [/:id] - End');
+      }
+    }
+  );
+
   router.post(
     '/students',
     sessionMiddleware,
@@ -138,8 +170,11 @@ export const connectorRouter: Router = (() => {
       }
 
       try {
-        const directorUserId = sessionContext.user.id;
-        const userDTO: UserDTO = await studentService.create(req.body, directorUserId);
+        const { institute, ...rest } = req.body;
+
+        const director = (await directorService.findByInstituteId(institute.id)).pop();
+
+        const userDTO: UserDTO = await studentService.create(rest, director!.user.id);
         logger.trace(`[StudentRouter] - [/] - Student created: ${JSON.stringify(userDTO)}. Sending response`);
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
@@ -218,41 +253,6 @@ export const connectorRouter: Router = (() => {
     }
   );
 
-  router.patch(
-    '/:courseId',
-    sessionMiddleware,
-    checkSessionContext,
-    roleMiddleware([Role.ADMIN]),
-    validateRequest(CourseUpdateSchema),
-    async (req: SessionRequest, res: Response, next: NextFunction) => {
-      try {
-        const courseId = req.params.courseId;
-
-        // Obtener datos para actualizar
-        const courseUpdateData: CourseUpdateDTO = {
-          ...req.body,
-        };
-
-        const updatedCourse: CourseDTO = await courseService.update(courseId, courseUpdateData);
-
-        const apiResponse = new ApiResponse(
-          ResponseStatus.Success,
-          'Course updated successfully',
-          updatedCourse,
-          StatusCodes.OK
-        );
-
-        handleApiResponse(apiResponse, res);
-      } catch (error) {
-        logger.error(`[CourseRouter] - [/update] - Error: ${error}`);
-        const apiError = new ApiError('Failed to update course', StatusCodes.INTERNAL_SERVER_ERROR, error);
-        return next(apiError);
-      } finally {
-        logger.trace('[CourseRouter] - [/update] - End');
-      }
-    }
-  );
-
   router.post(
     '/courses/:courseId/students',
     sessionMiddleware,
@@ -285,7 +285,7 @@ export const connectorRouter: Router = (() => {
   );
 
   router.post(
-    '/:courseId/section',
+    '/courses/:courseId/sections',
     sessionMiddleware,
     checkSessionContext,
     roleMiddleware([Role.ADMIN]),
@@ -314,7 +314,7 @@ export const connectorRouter: Router = (() => {
   );
 
   router.patch(
-    '/:courseId/sections/:sectionId',
+    '/courses/:courseId/sections/:sectionId',
     sessionMiddleware,
     checkSessionContext,
     roleMiddleware([Role.ADMIN]),
@@ -348,7 +348,7 @@ export const connectorRouter: Router = (() => {
   const storage = multer.memoryStorage();
   const upload = multer({ storage });
   router.post(
-    '/contents/:sectionId',
+    '/courses/contents/:sectionId',
     sessionMiddleware,
     checkSessionContext,
     roleMiddleware([Role.ADMIN]),
@@ -371,12 +371,88 @@ export const connectorRouter: Router = (() => {
           newContent,
           StatusCodes.OK
         );
+
+        //// Iniciar procesamiento automático en background (sin await para no bloquear)
+        //// Nota: desde el connector, usamos un instituteId genérico o lo obtenemos de la sección
+        //const connectorUrl = process.env.CONNECTOR_URL || 'http://localhost:5000/';
+        //const instituteId = req.body.instituteId || 'admin'; // El connector debe proporcionar el instituteId
+        //contentService.autoProcessContent(newContent.id, connectorUrl, instituteId).catch((error) => {
+        //  logger.error(`[ConnectorRouter] - Auto-process failed for content ${newContent.id}: ${error}`);
+        //});
+
         handleApiResponse(apiResponse, res);
       } catch (e) {
         const apiError = new ApiError('Failed to add content to section', StatusCodes.INTERNAL_SERVER_ERROR, e);
         return next(apiError);
       } finally {
         logger.trace('[CourseRouter] - [/:courseId/sections/:sectionId/content] - End');
+      }
+    }
+  );
+
+  router.patch(
+    '/courses/:courseId',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.ADMIN]),
+    validateRequest(CourseUpdateSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const courseId = req.params.courseId;
+
+        // Obtener datos para actualizar
+        const courseUpdateData: CourseUpdateDTO = {
+          ...req.body,
+        };
+
+        const updatedCourse: CourseDTO = await courseService.update(courseId, courseUpdateData);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Course updated successfully',
+          updatedCourse,
+          StatusCodes.OK
+        );
+
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[CourseRouter] - [/update] - Error: ${error}`);
+        const apiError = new ApiError('Failed to update course', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [/update] - End');
+      }
+    }
+  );
+
+  router.get(
+    '/courses/:id',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.ADMIN]),
+    validateRequest(GetCourseSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        logger.trace('[CourseRouter] - [/:id] - Start');
+        const courseReq = GetCourseSchema.parse({ params: req.params });
+        logger.trace(`[CourseRouter] - [/:id] - Retrieving course with id: ${courseReq.params.id}...`);
+
+        const course: CourseDTO = await courseService.findById(courseReq.params.id.toString());
+        logger.trace(`[CourseRouter] - [/:id] - Course found: ${JSON.stringify(course)}. Sending response`);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Course retrieved successfully',
+          course,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        logger.error(`[CourseRouter] - [/:id] - Error: ${e}`);
+        const apiError = new ApiError('Failed to retrieve course', StatusCodes.INTERNAL_SERVER_ERROR, e);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [/:id] - End');
       }
     }
   );
