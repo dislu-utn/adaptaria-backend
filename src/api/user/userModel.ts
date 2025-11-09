@@ -158,6 +158,7 @@ export const UserCreationSchema = z.object({
       .min(1, 'Last name cannot be empty'),
     email: z.string().email('Invalid email format'),
     document: DocumentSchema,
+    password: z.string().optional(),
   }),
 });
 
@@ -195,6 +196,7 @@ export const UserDirectorCreationSchema = z.object({
     institute: z.object({
       id: z.string(),
     }),
+    password: z.string().optional(),
   }),
 });
 export type UserCreationDTO = z.infer<typeof UserCreationSchema.shape.body>;
@@ -213,6 +215,7 @@ export type UserLoginDTO = z.infer<typeof UserLoginSchema.shape.body>;
 export const UpdateUserProfileSchema = z.object({
   body: z.object({
     profilePicture: z.string().url().optional(),
+    userId: z.string().optional(),
   }),
 });
 

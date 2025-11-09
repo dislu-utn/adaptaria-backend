@@ -12,6 +12,10 @@ export const studentRepository = {
     return student;
   },
 
+  findByInstituteId: async (instituteId: string): Promise<Student[]> => {
+    return StudentModel.find({ institute: instituteId }).populate('user').exec();
+  },
+
   addCourseToStudent: async (
     studentUserId: Types.ObjectId,
     course: { id: Types.ObjectId; courseName: string }

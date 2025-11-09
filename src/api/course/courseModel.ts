@@ -191,6 +191,7 @@ export const CourseCreationSchema = z.object({
     description: z.string().optional(),
     image: z.string().url().optional(),
     studentEmails: z.array(z.string().email()).optional(), // Array de emails
+    teacherUserId: z.string().optional(),
   }),
 });
 

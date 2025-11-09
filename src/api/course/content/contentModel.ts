@@ -229,6 +229,18 @@ export const UpdateContentSchema = z.object({
   }),
 });
 
+export const UpdateProcessedContentSchema = z.object({
+  params: z.object({
+    contentId: z.string(),
+  }),
+  body: z.object({
+    summary: z.string().optional(),
+    mindMap: z.any().optional(),
+    gamification: z.any().optional(),
+    speech: z.any().optional(),
+  }),
+});
+
 export type AddReactionsDTO = z.infer<typeof AddReactionsSchema.shape.body>;
 export type ContentCreationDTO = z.infer<typeof ContentCreationSchema.shape.body>;
 export type ContentCreation = ContentCreationDTO;

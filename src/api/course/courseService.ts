@@ -132,7 +132,11 @@ export const courseService = {
     return courseRepository.findCoursesByTeacherId(teacherUserId);
   },
 
-  async addSectionToCourse(courseId: string, sectionData: SectionCreationDTO): Promise<CourseDTO> {
+  async findCoursesByInstituteId(instituteId: string): Promise<CourseDTO[]> {
+    return courseRepository.findByInstituteId(instituteId);
+  },
+
+  async addSectionToCourse(courseId: string, sectionData: SectionCreationDTO): Promise<SectionDTO> {
     return await courseRepository.addSectionToCourse(courseId, sectionData);
   },
 
@@ -172,6 +176,21 @@ export const courseService = {
     );
 
     return contentsWithUrls;
+  },
+
+  getContentById: async (id: string) => {
+    const content = await courseRepository.getContentById(id);
+
+    if (!content) {
+      throw new Error('Content not found');
+    }
+
+    const presignedUrl = await s3Get(content.key);
+
+    return {
+      ...content,
+      presignedUrl,
+    };
   },
 
   deleteCourse: async (courseId: string): Promise<void> => {

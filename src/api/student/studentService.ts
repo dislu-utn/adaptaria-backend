@@ -18,13 +18,21 @@ export const studentService = {
   create: async (user: UserCreationDTO, directorUserId: string): Promise<UserDTO> => {
     logger.trace('[StudentService] - [create] - Start');
     logger.trace(`[StudentService] - [create] - Creating user: ${JSON.stringify(user)}`);
-    logger.trace(`[StudentService] - [create] - Generating random password...`);
-    const randomPassword = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
-    if (config.app.node_env === 'development') {
-      logger.trace(`[StudentService] - [create] - Random password: ${randomPassword}`);
+
+    let hash: string;
+    if (user.password) {
+      const { password, ...restUser } = user;
+      hash = password;
+      user = restUser;
+    } else {
+      logger.trace(`[StudentService] - [create] - Generating random password...`);
+      const randomPassword = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+      if (config.app.node_env === 'development') {
+        logger.trace(`[StudentService] - [create] - Random password: ${randomPassword}`);
+      }
+      logger.trace(`[StudentService] - [create] - Hashing password...`);
+      hash = await bcrypt.hash(randomPassword, 10);
     }
-    logger.trace(`[StudentService] - [create] - Hashing password...`);
-    const hash = await bcrypt.hash(randomPassword, 10);
 
     logger.trace(`[StudentService] - [create] - Password hashed.`);
     logger.trace(`[StudentService] - [create] - Creating user...`);
@@ -91,6 +99,20 @@ export const studentService = {
 
   getAllStudents: async (userId: string): Promise<UserDTO[]> => {
     return userService.getAllStudents(userId);
+  },
+
+  getStudentsByInstituteId: async (instituteId: string): Promise<any[]> => {
+    logger.trace(`[StudentService] - [getStudentsByInstituteId] - Finding students for institute: ${instituteId}`);
+    const students = await studentRepository.findByInstituteId(instituteId);
+    logger.trace(`[StudentService] - [getStudentsByInstituteId] - Found ${students.length} students`);
+
+    return students.map((student: any) => ({
+      id: student.user.id,
+      email: student.user.email,
+      firstName: student.user.firstName,
+      lastName: student.user.lastName,
+      learningProfile: student.learningProfile,
+    }));
   },
 
   getStudentsByFilters: async (filters: StudentFilter, teacherLogged: string): Promise<StudentResponse[] | null> => {

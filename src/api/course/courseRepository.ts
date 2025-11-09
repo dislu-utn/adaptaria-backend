@@ -10,7 +10,7 @@ import {
   CourseModel,
   CourseUpdateDTO,
 } from '@/api/course/courseModel';
-import { SectionCreationDTO, SectionModel, SectionUpdateDTO } from '@/api/course/section/sectionModel';
+import { SectionCreationDTO, SectionDTO, SectionModel, SectionUpdateDTO } from '@/api/course/section/sectionModel';
 import { StudentModel } from '@/api/student/studentModel';
 import { TeacherModel } from '@/api/teacher/teacherModel';
 import { UserModel } from '@/api/user/userModel';
@@ -29,6 +29,16 @@ export const courseRepository = {
     return course;
   },
 
+  getContentById: async (id: string): Promise<ContentDTO> => {
+    const content = await ContentModel.findById(id).exec();
+
+    if (!content) {
+      return Promise.reject(new Error('Content not found'));
+    }
+
+    return content.toDto();
+  },
+
   async findStudentsByEmails(emails: string[]): Promise<any[]> {
     return UserModel.find({ email: { $in: emails } }, { _id: 1, firstName: 1, lastName: 1, email: 1 });
   },
@@ -44,7 +54,17 @@ export const courseRepository = {
     return courses.map((course) => course.toDto());
   },
 
-  addSectionToCourse: async (courseId: string, sectionData: SectionCreationDTO): Promise<any> => {
+  async findByInstituteId(instituteId: string): Promise<CourseDTO[]> {
+    // Obtener todos los profesores del instituto
+    const teachers = await TeacherModel.find({ institute: instituteId }).exec();
+    const teacherIds = teachers.map((teacher) => teacher.user);
+
+    // Obtener todos los cursos de esos profesores
+    const courses = await CourseModel.find({ teacherUserId: { $in: teacherIds } }).exec();
+    return courses.map((course) => course.toDto());
+  },
+
+  addSectionToCourse: async (courseId: string, sectionData: SectionCreationDTO): Promise<SectionDTO> => {
     const newSection = new SectionModel({
       name: sectionData.name,
       description: sectionData.description,

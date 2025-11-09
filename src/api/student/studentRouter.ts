@@ -19,6 +19,7 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
 
+import { connector_sync } from '../connector/connector_sync';
 import { studentService } from './studentService';
 
 export const studentRegistry = new OpenAPIRegistry();
@@ -55,12 +56,19 @@ export const studentRouter: Router = (() => {
         const directorUserId = sessionContext.user.id;
         const userDTO: UserDTO = await studentService.create(req.body, directorUserId);
         logger.trace(`[StudentRouter] - [/] - Student created: ${JSON.stringify(userDTO)}. Sending response`);
+
+        // Obtener el instituteId del director para sincronizar
+        const instituteId = await directorService.getInstituteId(directorUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Student created successfully',
           userDTO,
           StatusCodes.CREATED
         );
+
+        connector_sync(instituteId, 'student', userDTO.id, 'create');
+
         handleApiResponse(apiResponse, res);
       } catch (error) {
         logger.error(`[StudentRouter] - [/] - Error: ${error}`);

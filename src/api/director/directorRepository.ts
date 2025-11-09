@@ -18,4 +18,9 @@ export const directorRepository = {
     const directors = await DirectorModel.find().populate('user').populate('institute').exec();
     return directors.map((director) => director.toDto());
   },
+
+  findByInstituteId: async (instituteId: string): Promise<DirectorDTO[]> => {
+    const directors = await DirectorModel.find({ institute: instituteId }).populate('user').exec();
+    return directors.map((director) => director.toDto());
+  },
 };

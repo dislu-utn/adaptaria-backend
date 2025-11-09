@@ -14,6 +14,7 @@ import { Role } from '@/common/models/role';
 import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers';
 import { logger } from '@/common/utils/serverLogger';
 
+import { connector_sync } from '../connector/connector_sync';
 import { directorService } from '../director/directorService';
 import { UserCreationMassiveSchema, UserCreationSchema, UserDTOSchema } from '../user/userModel';
 import { teacherService } from './teacherService';
@@ -54,12 +55,19 @@ export const teacherRouter: Router = (() => {
         const directorUserId = sessionContext.user.id;
         const createdTeacher = await teacherService.create(teacher, directorUserId);
         logger.trace(`[TeacherRouter] - [/] - Teacher created: ${JSON.stringify(createdTeacher)}`);
+
+        // Obtener el instituteId del director para sincronizar
+        const instituteId = await directorService.getInstituteId(directorUserId);
+
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Teacher successfully created',
           createdTeacher,
           StatusCodes.CREATED
         );
+
+        connector_sync(instituteId, 'teacher', createdTeacher.id, 'create');
+
         handleApiResponse(apiResponse, res);
       } catch (e) {
         logger.error(`[TeacherRouter] - [/] - Error: ${e}`);
