@@ -41,7 +41,11 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 
 import { connector_sync } from '../connector/connector_sync';
+import { instituteService } from '../institute/instituteService';
+import { studentService } from '../student/studentService';
 import { teacherService } from '../teacher/teacherService';
+import { userService } from '../user/userService';
+import { courseRepository } from './courseRepository';
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -448,6 +452,13 @@ export const courseRouter: Router = (() => {
       try {
         logger.trace('[CourseRouter] - [/:courseId/students] - Start');
         const updatedCourse = await courseService.addStudentsToCourse(courseId, studentEmails);
+        const instituteId = await teacherService.getInstituteId(updatedCourse.teacherUserId);
+
+        for (const student of updatedCourse.students) {
+          if (studentEmails.includes(student.email)) {
+            connector_sync(instituteId, 'student', student.userId + '/' + courseId, 'create');
+          }
+        }
 
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
@@ -495,6 +506,10 @@ export const courseRouter: Router = (() => {
           matriculationCode,
           emailArray
         );
+
+        const instituteId = await teacherService.getInstituteId(updatedCourse.teacherUserId);
+        const student = (await courseRepository.findStudentsByEmails(emailArray)).pop();
+        connector_sync(instituteId, 'student', student.userId + '/' + courseId, 'create');
 
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
