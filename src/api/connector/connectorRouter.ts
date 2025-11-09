@@ -31,7 +31,13 @@ import { InvalidCredentialsError } from '../auth/authModel';
 import { ContentCreationSchema, UpdateProcessedContentSchema } from '../course/content/contentModel';
 import { contentService } from '../course/content/contentService';
 import { courseService } from '../course/courseService';
-import { SectionCreationSchema, SectionDTO, SectionUpdateSchema } from '../course/section/sectionModel';
+import {
+  SectionCreationSchema,
+  SectionDTO,
+  SectionFetchingSchema,
+  SectionUpdateSchema,
+} from '../course/section/sectionModel';
+import { sectionService } from '../course/section/sectionService';
 import { directorService } from '../director/directorService';
 import { InstituteCreationSchema, InstituteDTO } from '../institute/instituteModel';
 import { instituteService } from '../institute/instituteService';
@@ -687,6 +693,29 @@ export const connectorRouter: Router = (() => {
       } catch (e) {
         const apiError = new ApiError('Failed to retrieve sections', StatusCodes.INTERNAL_SERVER_ERROR, e);
         return next(apiError);
+      }
+    }
+  );
+
+  router.get(
+    '/courses/:courseId/sections/:sectionId',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.ADMIN]),
+    validateRequest(SectionFetchingSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      const { sectionId } = req.params;
+      logger.trace(`[ConnectorRouter] - [/:courseId/sections/:sectionId] - Getting sections for course ${sectionId}`);
+
+      try {
+        const section = await sectionService.findById(sectionId);
+        res.status(200).json({
+          success: true,
+          message: 'Section retrieved successfully',
+          data: section,
+        });
+      } catch (error) {
+        next(error);
       }
     }
   );
