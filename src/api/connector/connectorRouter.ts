@@ -1,6 +1,7 @@
 import express, { NextFunction, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import multer from 'multer';
+import { z } from 'zod';
 
 import {
   AddStudentsSchema,
@@ -28,8 +29,7 @@ import { handleApiResponse, validateRequest } from '@/common/utils/httpHandlers'
 import { logger } from '@/common/utils/serverLogger';
 
 import { InvalidCredentialsError } from '../auth/authModel';
-import { ContentCreationSchema, UpdateProcessedContentSchema } from '../course/content/contentModel';
-import { contentService } from '../course/content/contentService';
+import { ContentCreationSchema } from '../course/content/contentModel';
 import { courseService } from '../course/courseService';
 import {
   SectionCreationSchema,
@@ -44,10 +44,52 @@ import { instituteService } from '../institute/instituteService';
 import { studentService } from '../student/studentService';
 import { teacherService } from '../teacher/teacherService';
 import { userService } from '../user/userService';
+import { connector_sync } from './connector_sync';
 const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
+
+// Schema para validar el sync request
+const SyncSchema = z.object({
+  body: z.object({
+    institution_id: z.string().min(1, 'Institution ID is required'),
+  }),
+});
 
 export const connectorRouter: Router = (() => {
   const router = express.Router();
+
+  /**
+   * Sincronizar institución
+   * POST /connector/sync
+   */
+  router.post(
+    '/sync',
+    roleMiddleware([Role.ADMIN]),
+    validateRequest(SyncSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { institution_id } = req.body;
+
+        logger.trace(`[ConnectorRouter] - [/sync] - Syncing institution ${institution_id}`);
+
+        // Llamar a la función de sincronización
+        await connector_sync(institution_id, 'institute', institution_id, 'sync');
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Sync initiated successfully',
+          { institution_id },
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[ConnectorRouter] - [/sync] - Error: ${error}`);
+        const apiError = new ApiError('Failed to sync institution', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return next(apiError);
+      } finally {
+        logger.trace('[ConnectorRouter] - [/sync] - End');
+      }
+    }
+  );
 
   router.get(
     '/users/get_hashed_password/:id',
