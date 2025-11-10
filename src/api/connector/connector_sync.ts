@@ -29,14 +29,13 @@ export async function connector_sync(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        institution_id,
-        entity,
-        entity_id,
+        institution_id: institution_id,
+        entity: entity,
+        entity_id: entity_id,
         origin: 'adaptaria',
-        method,
+        method: method,
       }),
     });
-
     if (!response.ok) {
       logger.warn(`[ConnectorSync] - Sync failed with status ${response.status} for ${entity} ${entity_id}`);
     } else {

@@ -50,7 +50,7 @@ const UNAUTHORIZED = new ApiError('Unauthorized', StatusCodes.UNAUTHORIZED);
 // Schema para validar el sync request
 const SyncSchema = z.object({
   body: z.object({
-    institution_id: z.string().min(1, 'Institution ID is required'),
+    id: z.string().min(1, 'Institution ID is required'),
   }),
 });
 
