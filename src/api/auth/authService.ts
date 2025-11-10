@@ -54,7 +54,16 @@ export const authService = {
         await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id)
       ).json();
 
-      if (!dislu_id) logger.trace(`[AuthService] - [login] - dislu user_id not found`);
+      let userId: string;
+      if (dislu_id) {
+        userId = dislu_id;
+        logger.trace(`[AuthService] - [login] - dislu user_id ${dislu_id}`);
+      } else {
+        userId = foundUser.toDto().id;
+        logger.trace(`[AuthService] - [login] - adaptaria user_id ${userId}`);
+
+        logger.trace(`[AuthService] - [login] - dislu user_id not found`);
+      }
 
       logger.trace(`[AuthService] - [login] - dislu user_id ${dislu_id}`);
 
