@@ -128,7 +128,7 @@ export type Content = IContentSchemaDefinition & IContentSchemaDefinitionMethods
 
 export const ContentCreationSchema = z.object({
   params: z.object({
-    courseId: z.string(),
+    courseId: z.string().optional(),
     sectionId: z.string(),
   }),
   body: z.object({
@@ -140,7 +140,12 @@ export const ContentCreationSchema = z.object({
       }
       return null;
     }, z.date().nullable().optional()),
-    visible: z.boolean().optional(),
+    visible: z.preprocess((arg) => {
+      if (typeof arg === 'string') {
+        return arg === 'true' || arg === '1';
+      }
+      return arg;
+    }, z.boolean().optional()),
   }),
 });
 

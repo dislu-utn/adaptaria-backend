@@ -8,6 +8,7 @@ import { SectionCreationDTO, SectionDTO, SectionUpdateDTO } from '@/api/course/s
 import { studentRepository } from '@/api/student/studentRepository';
 import { teacherRepository } from '@/api/teacher/teacherRepository';
 import { s3Get, s3Put } from '@/common/utils/awsManager';
+import { logger } from '@/common/utils/serverLogger';
 
 import { sectionRepository } from './section/sectionRepository';
 
@@ -153,9 +154,21 @@ export const courseService = {
     contentData: ContentCreationDTO,
     file: Express.Multer.File
   ): Promise<ContentDTO> {
+    logger.trace(`[CourseService] - Adding content to section ${sectionId}`);
+    logger.trace(`[CourseService] - File: ${file.originalname}, size: ${file.size} bytes`);
+
     const key = `${randomUUID()}`.toString();
+    logger.trace(`[CourseService] - Generated key: ${key}`);
+
+    logger.trace(`[CourseService] - Uploading file to S3...`);
     const preSignedUrl = await s3Put(key, file);
-    return await courseRepository.addContentToSection(sectionId, contentData, key, preSignedUrl);
+    logger.trace(`[CourseService] - File uploaded successfully to S3`);
+
+    logger.trace(`[CourseService] - Saving content to database...`);
+    const content = await courseRepository.addContentToSection(sectionId, contentData, key, preSignedUrl);
+    logger.trace(`[CourseService] - Content saved successfully with id: ${content.id}`);
+
+    return content;
   },
 
   getContentsWithPresignedUrls: async (sectionId: string) => {

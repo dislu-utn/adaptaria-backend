@@ -74,7 +74,11 @@ export const connectorRouter: Router = (() => {
         logger.trace(`[ConnectorRouter] - [/sync] - Syncing institution ${institution_id}`);
 
         // Llamar a la función de sincronización
-        await connector_sync(institution_id, 'institute', institution_id, 'sync');
+        const resp = await connector_sync(institution_id, 'institute', institution_id, 'sync');
+
+        if (!resp) {
+          throw Error('Internal Server Error');
+        }
 
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,

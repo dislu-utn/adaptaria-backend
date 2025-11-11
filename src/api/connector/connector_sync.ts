@@ -14,7 +14,7 @@ export async function connector_sync(
   entity: string,
   entity_id: string,
   method: string
-): Promise<void> {
+): Promise<Response | undefined> {
   const connectorUrl = process.env.CONNECTOR_URL || 'http://localhost:5000/';
 
   if (!institution_id) {
@@ -43,8 +43,10 @@ export async function connector_sync(
         `[ConnectorSync] - Synced ${entity} ${entity_id} with method ${method} for institution ${institution_id}`
       );
     }
+
+    return response;
   } catch (error) {
     logger.error(`[ConnectorSync] - Failed to sync ${entity} ${entity_id}: ${error}`);
-    throw error;
+    return undefined;
   }
 }
