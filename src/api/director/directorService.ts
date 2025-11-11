@@ -33,7 +33,12 @@ export const directorService = {
     }
     logger.trace(`[DirectorService] - [create] - Creating user...`);
 
-    const createdUser: UserDTO = await userService.create({ ...user, password: hash, role: Role.DIRECTOR });
+    const createdUser: UserDTO = await userService.create({
+      ...user,
+      password: hash,
+      role: Role.DIRECTOR,
+      forcePasswordReset: false,
+    });
     logger.trace(`[DirectorService] - [create] - User created: ${JSON.stringify(createdUser)}`);
 
     const director = new DirectorModel({

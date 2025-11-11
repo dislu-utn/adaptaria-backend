@@ -50,25 +50,26 @@ export const authService = {
       }
 
       logger.trace(`[AuthService] - [login] - fetching dislu user_id`);
-      const dislu_id: string = await (
-        await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id)
-      ).json();
+      let dislu_id: string | undefined = undefined;
+      try {
+        const dislu_req = await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id);
+        logger.trace(`[AuthService] ${dislu_req}`);
 
-      let userId: string;
-      if (dislu_id) {
-        userId = dislu_id;
-        logger.trace(`[AuthService] - [login] - dislu user_id ${dislu_id}`);
-      } else {
-        userId = foundUser.toDto().id;
-        logger.trace(`[AuthService] - [login] - adaptaria user_id ${userId}`);
-
-        logger.trace(`[AuthService] - [login] - dislu user_id not found`);
+        if (dislu_req.ok) {
+          const dislu_user = await dislu_req.json();
+          dislu_id = dislu_user['id'];
+          logger.trace(`[AuthService] - [login] - dislu user_id ${dislu_id}`);
+        }
+      } catch {
+        logger.trace(`[AuthService] - [login] - Not user_id ${dislu_id} in dislu`);
       }
 
-      logger.trace(`[AuthService] - [login] - dislu user_id ${dislu_id}`);
+      const adaptariaId = foundUser.toDto().id;
+      logger.trace(`[AuthService] - [login] - adaptaria user_id ${adaptariaId}`);
+      logger.trace(`[AuthService] - [login] - dislu user_id not found`);
 
       logger.trace(`[AuthService] - [login] - User is valid, creating session token`);
-      const token = { id: foundUser.toDto().id, userId: dislu_id };
+      const token = { id: adaptariaId, userId: dislu_id };
 
       const access_token = jwt.sign(token, config.jwt.secret as string, { expiresIn: '12h' });
 

@@ -199,7 +199,7 @@ export const UserDirectorCreationSchema = z.object({
     password: z.string().optional(),
   }),
 });
-export type UserCreationDTO = z.infer<typeof UserCreationSchema.shape.body>;
+export type UserCreationDTO = z.infer<typeof UserCreationSchema.shape.body> & { forcePasswordReset?: boolean };
 export type UserDirectorCreationDTO = z.infer<typeof UserDirectorCreationSchema.shape.body>;
 export type UserCreation = UserCreationDTO & { password: string; role: Role };
 

@@ -221,7 +221,6 @@ export const connectorRouter: Router = (() => {
         const { institute, ...rest } = req.body;
 
         const director = (await directorService.findByInstituteId(institute.id)).pop();
-
         const userDTO: UserDTO = await studentService.create(rest, director!.user.id);
         logger.trace(`[StudentRouter] - [/] - Student created: ${JSON.stringify(userDTO)}. Sending response`);
         const apiResponse = new ApiResponse(
