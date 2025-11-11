@@ -45,6 +45,6 @@ export async function connector_sync(
     }
   } catch (error) {
     logger.error(`[ConnectorSync] - Failed to sync ${entity} ${entity_id}: ${error}`);
-    // Don't throw the error to avoid breaking the main flow
+    throw error;
   }
 }

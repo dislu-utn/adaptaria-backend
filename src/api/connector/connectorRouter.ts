@@ -63,16 +63,18 @@ export const connectorRouter: Router = (() => {
    */
   router.post(
     '/sync',
-    roleMiddleware([Role.ADMIN]),
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.ADMIN, Role.DIRECTOR]),
     validateRequest(SyncSchema),
     async (req: SessionRequest, res: Response, next: NextFunction) => {
       try {
-        const { institution_id } = req.body;
+        const { id: institution_id } = req.body;
 
         logger.trace(`[ConnectorRouter] - [/sync] - Syncing institution ${institution_id}`);
 
         // Llamar a la función de sincronización
-        connector_sync(institution_id, 'institute', institution_id, 'sync');
+        await connector_sync(institution_id, 'institute', institution_id, 'sync');
 
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
