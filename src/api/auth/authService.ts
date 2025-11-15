@@ -50,9 +50,9 @@ export const authService = {
       }
 
       logger.trace(`[AuthService] - [login] - fetching dislu user_id`);
-      const dislu_id: string = await (
-        await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id)
-      ).json();
+      const dislu_response = await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id);
+      const data = await dislu_response.json();
+      const dislu_id = data.id;
 
       if (!dislu_id) logger.trace(`[AuthService] - [login] - dislu user_id not found`);
 
@@ -173,10 +173,9 @@ export const authService = {
       }
 
       logger.trace(`[AuthService] - [login] - fetching dislu user_id`);
-      const dislu_id: string = await (
-        await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id)
-      ).json();
-
+      const dislu_response = await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id);
+      const data = await dislu_response.json();
+      const dislu_id = data.id;
       if (!dislu_id) logger.trace(`[AuthService] - [login] - dislu user_id not found`);
 
       logger.trace(`[AuthService] - [login] - dislu user_id ${dislu_id}`);
