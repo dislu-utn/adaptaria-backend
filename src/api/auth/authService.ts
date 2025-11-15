@@ -181,8 +181,20 @@ export const authService = {
       if (!foundUser) {
         return undefined;
       }
+
+      logger.trace(`[AuthService] - [login] - fetching dislu user_id`);
+      const dislu_id: string = await (
+        await fetch(process.env.DISLU_URL + 'api/users/get_external_id/' + foundUser.toDto().id)
+      ).json();
+
+      if (!dislu_id) logger.trace(`[AuthService] - [login] - dislu user_id not found`);
+
+      logger.trace(`[AuthService] - [login] - dislu user_id ${dislu_id}`);
+
       logger.trace(`[AuthService] - [loginWithGoogle] - Google user valid, creating session`);
-      const token: SessionPayload = SessionPayloadSchema.parse({ id: foundUser.toDto().id });
+      //const token: SessionPayload = SessionPayloadSchema.parse({ id: foundUser.toDto().id });
+
+      const token = { id: foundUser.toDto().id, userId: dislu_id };
       const access_token = jwt.sign(token, config.jwt.secret as string, { expiresIn: '12h' });
 
       let requiresSurvey: boolean | undefined;
