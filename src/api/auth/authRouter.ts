@@ -108,7 +108,14 @@ export const authRouter: Router = (() => {
   router.delete('/', sessionMiddleware, async (req: Request, res: Response) => {
     logger.trace('[AuthRouter] - [/] - Start');
     logger.trace('[AuthRouter] - [/] - Clearing access token from cookie');
-    res.clearCookie('access_token');
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      ...(process.env.NODE_ENV === 'production' && {
+        domain: process.env.DOMAIN_NAME,
+      }),
+    });
     logger.trace('[AuthRouter] - [/] - Sending response');
     const response = new ApiResponse(ResponseStatus.Success, 'User logged out', null, StatusCodes.OK);
     return handleApiResponse(response, res);
@@ -194,6 +201,9 @@ export const authRouter: Router = (() => {
           maxAge: 12 * 60 * 60 * 1000,
           sameSite: 'lax',
           secure: config.app.node_env === 'production',
+          ...(process.env.NODE_ENV === 'production' && {
+            domain: process.env.DOMAIN_NAME,
+          }),
         });
 
         logger.trace('[AuthRouter] - [/google/callback] - Sending response');
