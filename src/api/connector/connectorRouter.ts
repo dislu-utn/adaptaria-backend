@@ -61,6 +61,7 @@ export const connectorRouter: Router = (() => {
    * Sincronizar institución
    * POST /connector/sync
    */
+
   router.post(
     '/sync',
     sessionMiddleware,
@@ -71,7 +72,7 @@ export const connectorRouter: Router = (() => {
       try {
         const { id: institution_id } = req.body;
 
-        logger.trace(`[ConnectorRouter] - [/sync] - Syncing institution ${institution_id}`);
+        logger.trace(`[ConnectorRouter] - [/sync] - POST - Syncing institution ${institution_id}`);
 
         // Llamar a la función de sincronización
         const resp = await connector_sync(institution_id, 'institute', institution_id, 'sync');
@@ -88,11 +89,51 @@ export const connectorRouter: Router = (() => {
         );
         handleApiResponse(apiResponse, res);
       } catch (error) {
-        logger.error(`[ConnectorRouter] - [/sync] - Error: ${error}`);
+        logger.error(`[ConnectorRouter] - [/sync] - POST - Error: ${error}`);
         const apiError = new ApiError('Failed to sync institution', StatusCodes.INTERNAL_SERVER_ERROR, error);
         return next(apiError);
       } finally {
-        logger.trace('[ConnectorRouter] - [/sync] - End');
+        logger.trace('[ConnectorRouter] - [/sync] - POST - End');
+      }
+    }
+  );
+
+  router.get(
+    '/sync/:id',
+    sessionMiddleware,
+    checkSessionContext,
+    roleMiddleware([Role.ADMIN, Role.DIRECTOR]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const { id: institution_id } = req.params;
+        if (!institution_id) {
+          throw Error(`Invalid institution_id: ${institution_id}`);
+        }
+
+        logger.trace(`[ConnectorRouter] - [/sync] - GET - ${institution_id}`);
+
+        const resp = await fetch(process.env.DISLU_URL + 'api/institution/get_external_id/' + institution_id);
+
+        if (!resp.ok) {
+          throw Error('Not found');
+        }
+
+        const data = await resp.json();
+        const isSynchronized = data === true || data?.synchronized === true;
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Sync status retrieved successfully',
+          isSynchronized,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[ConnectorRouter] - [/sync] - GET - Error: ${error}`);
+        const apiError = new ApiError('Failed to get sync status', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return next(apiError);
+      } finally {
+        logger.trace('[ConnectorRouter] - [/sync] - GET - End');
       }
     }
   );

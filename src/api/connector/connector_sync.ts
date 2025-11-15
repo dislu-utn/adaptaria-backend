@@ -15,15 +15,16 @@ export async function connector_sync(
   entity_id: string,
   method: string
 ): Promise<Response | undefined> {
-  const connectorUrl = process.env.CONNECTOR_URL || 'http://localhost:5000/';
+  const connectorUrl = process.env.CONNECTOR_URL || 'http://localhost:5000';
 
+  logger.info(`[ConnectorSync] - Sync fetch ${connectorUrl}/sync`);
   if (!institution_id) {
     logger.warn('[ConnectorSync] - No institution_id provided, skipping sync');
     return;
   }
 
   try {
-    const response = await fetch(connectorUrl, {
+    const response = await fetch(`${connectorUrl}/sync`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
