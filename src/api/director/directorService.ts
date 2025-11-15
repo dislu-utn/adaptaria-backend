@@ -17,19 +17,20 @@ export const directorService = {
     logger.trace(`[DirectorService] - [create] - Creating user: ${JSON.stringify(user)}`);
 
     let hash: string;
+    let forcePasswordReset: boolean;
     if (user.password) {
       const { password, ...restUser } = user;
       hash = password;
       user = restUser;
+      forcePasswordReset = false;
     } else {
       logger.trace(`[DirectorService] - [create] - Generating random password...`);
       const randomPassword = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
       if (config.app.node_env === 'development') {
         logger.trace(`[DirectorService] - [create] - Random password: ${randomPassword}`);
       }
-      logger.trace(`[DirectorService] - [create] - Hashing password...`);
+      forcePasswordReset = true;
       hash = await bcrypt.hash(randomPassword, 10);
-      logger.trace(`[DirectorService] - [create] - Password hashed.`);
     }
     logger.trace(`[DirectorService] - [create] - Creating user...`);
 
@@ -37,7 +38,7 @@ export const directorService = {
       ...user,
       password: hash,
       role: Role.DIRECTOR,
-      forcePasswordReset: false,
+      forcePasswordReset: forcePasswordReset,
     });
     logger.trace(`[DirectorService] - [create] - User created: ${JSON.stringify(createdUser)}`);
 

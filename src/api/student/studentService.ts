@@ -20,27 +20,29 @@ export const studentService = {
     logger.trace(`[StudentService] - [create] - Creating user: ${JSON.stringify(user)}`);
 
     let hash: string;
+    let forcePasswordReset: boolean;
     if (user.password) {
       const { password, ...restUser } = user;
       hash = password;
       user = restUser;
+      forcePasswordReset = false;
     } else {
       logger.trace(`[StudentService] - [create] - Generating random password...`);
       const randomPassword = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
       if (config.app.node_env === 'development') {
         logger.trace(`[StudentService] - [create] - Random password: ${randomPassword}`);
       }
-      logger.trace(`[StudentService] - [create] - Hashing password...`);
+      forcePasswordReset = true;
       hash = await bcrypt.hash(randomPassword, 10);
     }
 
-    logger.trace(`[StudentService] - [create] - Password hashed.`);
-    logger.trace(`[StudentService] - [create] - Creating user...`);
-    const createdUser: UserDTO = await userService.create({ ...user, password: hash, role: Role.STUDENT });
+    const createdUser: UserDTO = await userService.create({
+      ...user,
+      password: hash,
+      role: Role.STUDENT,
+      forcePasswordReset: forcePasswordReset,
+    });
     logger.trace(`[StudentService] - [create] - User created: ${JSON.stringify(createdUser)}`);
-
-    // Crear la entrada en la colección de estudiantes
-    logger.trace(`[StudentService] - [create] - Creating student entry...`);
 
     const instituteId = await directorRepository.getInstituteId(directorUserId);
 
