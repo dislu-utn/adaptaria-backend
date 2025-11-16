@@ -35,7 +35,10 @@ export async function connector_sync(
     });
 
     if (response.status >= 400) {
-      logger.warn(`[ConnectorSync] - Sync failed with status ${response.status} for ${entity} ${entity_id}`);
+      logger.warn(
+        `[ConnectorSync] - Sync failed with status ${response.status} for ${entity} ${entity_id}. ` +
+          `Reason: ${response.statusText}. Details: ${JSON.stringify(response.data)}`
+      );
     } else {
       logger.trace(
         `[ConnectorSync] - Synced ${entity} ${entity_id} with method ${method} for institution ${institution_id}`
@@ -44,7 +47,18 @@ export async function connector_sync(
 
     return response as any;
   } catch (error) {
-    logger.error(`[ConnectorSync] - Failed to sync ${entity} ${entity_id}: ${error}`);
+    if (axios.isAxiosError(error)) {
+      const errorDetails = {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        code: error.code,
+      };
+      logger.error(`[ConnectorSync] - Failed to sync ${entity} ${entity_id}: ${JSON.stringify(errorDetails, null, 2)}`);
+    } else {
+      logger.error(`[ConnectorSync] - Failed to sync ${entity} ${entity_id}: ${error}`);
+    }
     return undefined;
   }
 }
