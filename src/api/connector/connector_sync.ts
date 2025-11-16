@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 import { logger } from '@/common/utils/serverLogger';
 
 /**
@@ -24,20 +26,15 @@ export async function connector_sync(
   }
 
   try {
-    const response = await fetch(`${connectorUrl}/sync`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        institution_id: institution_id,
-        entity: entity,
-        entity_id: entity_id,
-        origin: 'adaptaria',
-        method: method,
-      }),
+    const response = await axios.post(`${connectorUrl}/sync`, {
+      institution_id: institution_id,
+      entity: entity,
+      entity_id: entity_id,
+      origin: 'adaptaria',
+      method: method,
     });
-    if (!response.ok) {
+
+    if (response.status >= 400) {
       logger.warn(`[ConnectorSync] - Sync failed with status ${response.status} for ${entity} ${entity_id}`);
     } else {
       logger.trace(
@@ -45,7 +42,7 @@ export async function connector_sync(
       );
     }
 
-    return response;
+    return response as any;
   } catch (error) {
     logger.error(`[ConnectorSync] - Failed to sync ${entity} ${entity_id}: ${error}`);
     return undefined;

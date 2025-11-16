@@ -1,3 +1,4 @@
+import axios from 'axios';
 import express, { NextFunction, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import multer from 'multer';
@@ -112,19 +113,16 @@ export const connectorRouter: Router = (() => {
 
         logger.trace(`[ConnectorRouter] - [/sync] - GET - ${institution_id}`);
 
-        const resp = await fetch(process.env.DISLU_URL + 'api/institution/get_external_id/' + institution_id);
+        const resp = await axios.get(process.env.DISLU_URL + 'api/institution/get_external/' + institution_id);
 
-        if (!resp.ok) {
+        if (resp.status >= 400) {
           throw Error('Not found');
         }
-
-        const data = await resp.json();
-        const isSynchronized = data === true || data?.synchronized === true;
 
         const apiResponse = new ApiResponse(
           ResponseStatus.Success,
           'Sync status retrieved successfully',
-          isSynchronized,
+          true,
           StatusCodes.OK
         );
         handleApiResponse(apiResponse, res);
