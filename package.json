@@ -27,6 +27,7 @@
     "@aws-sdk/s3-request-presigner": "^3.627.0",
     "@types/mongoose": "^5.11.97",
     "aws-sdk": "^2.1671.0",
+    "axios": "^1.13.2",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
