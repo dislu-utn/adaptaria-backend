@@ -119,6 +119,11 @@ export const GetUserSchema = z.object({
   params: z.object({ id: commonValidations.id }),
 });
 
+// Input Validation for 'GET users/get_by_email/:email' endpoint
+export const GetUserByEmailSchema = z.object({
+  params: z.object({ email: z.string().email('Invalid email format') }),
+});
+
 // Validación para el tipo de documento
 const DocumentTypeEnum = z.enum(['DNI', 'Pasaporte']);
 

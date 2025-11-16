@@ -13,6 +13,7 @@ import {
   GetCourseSchema,
 } from '@/api/course/courseModel';
 import {
+  GetUserByEmailSchema,
   GetUserSchema,
   UpdateUserProfileSchema,
   UpdateUserRoleSchema,
@@ -132,6 +133,34 @@ export const connectorRouter: Router = (() => {
         return next(apiError);
       } finally {
         logger.trace('[ConnectorRouter] - [/sync] - GET - End');
+      }
+    }
+  );
+
+  router.get(
+    '/users/get_by_email/:email',
+    validateRequest(GetUserByEmailSchema),
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      try {
+        const userReq = GetUserByEmailSchema.parse({ params: req.params });
+        const user: UserDTO & { password?: string } = await userService.findByEmail(userReq.params.email);
+        user.password = await userService.getHashedPassword(user.id!);
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'User retrieved successfully',
+          user,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (e) {
+        if (e instanceof InvalidCredentialsError) {
+          const apiError = new ApiError('User not found', StatusCodes.NOT_FOUND, e);
+          return next(apiError);
+        }
+        return next(new ApiError('Failed to retrieve user', StatusCodes.INTERNAL_SERVER_ERROR, e));
+      } finally {
+        logger.trace('[ConnectorRouter] - [/users/get_by_email/:email] - End');
       }
     }
   );

@@ -76,6 +76,61 @@ export const userService = {
     };
   },
 
+  // Retrieves a single user by their email
+  findByEmail: async (email: string): Promise<any> => {
+    const user: User | null = await userRepository.findByEmail(email);
+    if (!user) {
+      throw new InvalidCredentialsError();
+    }
+
+    const userId = user._id.toString();
+    let instituteId: any = null;
+    let learningProfile: string | null = null;
+
+    // Verifica el rol del usuario
+    if (user.role === Role.DIRECTOR) {
+      const director = await DirectorModel.findOne({ user: { _id: userId } }).exec();
+      if (director) {
+        instituteId = director.institute;
+      }
+    } else if (user.role === Role.TEACHER) {
+      const teacher = await TeacherModel.findOne({ user: { _id: userId } }).exec();
+      if (teacher) {
+        instituteId = teacher?.institute;
+      }
+    } else if (user.role === Role.STUDENT) {
+      const student = await StudentModel.findOne({ user: { _id: userId } }).exec();
+      if (student) {
+        instituteId = student?.institute;
+        learningProfile = student.learningProfile;
+      }
+    }
+
+    // Trae la información de la institución si existe
+    let institute: InstituteDTO | null = null;
+    if (instituteId) {
+      const foundInstitute = await InstituteModel.findById(instituteId).exec();
+      if (foundInstitute) {
+        institute = foundInstitute.toDto();
+      }
+    }
+
+    let requiresSurvey: boolean | null = null;
+    if (user.role === 'TEACHER' || user.role === 'STUDENT') {
+      const currentDate = new Date();
+      const nextDateSurvey = user.nextDateSurvey ? new Date(user.nextDateSurvey as any) : null;
+      requiresSurvey = nextDateSurvey ? currentDate >= nextDateSurvey : false;
+    }
+
+    // Retorna el UserDTO con la información adicional
+    return {
+      ...user.toDto(),
+      ...(institute && { institute }), // Solo agrega `institute` si no es `null` o `undefined`
+      ...(learningProfile && { learningProfile }), // Solo agrega `learningProfile` si no es `null` o `undefined`
+      ...{ requiresSurvey },
+    };
+  },
+
   create: async (user: UserCreation): Promise<UserDTO> => {
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
