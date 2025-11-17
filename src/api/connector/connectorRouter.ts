@@ -10,6 +10,7 @@ import {
   CourseDTO,
   CourseUpdateDTO,
   CourseUpdateSchema,
+  DeleteUserFromCourseSchema,
   GetCourseSchema,
 } from '@/api/course/courseModel';
 import {
@@ -510,6 +511,64 @@ export const connectorRouter: Router = (() => {
       }
     }
   );
+
+  router.delete(
+    '/courses/:courseId/sections/:sectionId',
+    sessionMiddleware,
+    roleMiddleware([Role.ADMIN]),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      const courseId = req.params.courseId;
+      const sectionId = req.params.sectionId;
+
+      try {
+        await sectionService.deleteSection(sectionId, courseId);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'Section deleted successfully',
+          null,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[CourseRouter] - [section/delete] - Error: ${error}`);
+
+        const apiError = new ApiError('Failed to delete section', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [section/delete] - End');
+      }
+    }
+  );
+
+  /*
+  router.delete(
+    '/courses/:courseId/users/:userId',
+    sessionMiddleware,
+    roleMiddleware([Role.ADMIN]),
+    validateRequest(DeleteUserFromCourseSchema),
+    async (req: SessionRequest, res: Response, next: NextFunction) => {
+      const { courseId, userId } = req.params;
+
+      try {
+        await courseService.removeUserFromCourse(userId, courseId);
+
+        const apiResponse = new ApiResponse(
+          ResponseStatus.Success,
+          'User removed from course successfully',
+          null,
+          StatusCodes.OK
+        );
+        handleApiResponse(apiResponse, res);
+      } catch (error) {
+        logger.error(`[CourseRouter] - [user_x_cousr/delete] - Error: ${error}`);
+        const apiError = new ApiError('Failed to remove user from course', StatusCodes.INTERNAL_SERVER_ERROR, error);
+        return next(apiError);
+      } finally {
+        logger.trace('[CourseRouter] - [user_x_cousr/delete] - End');
+      }
+    }
+  );*/
 
   router.patch(
     '/courses/:courseId',
